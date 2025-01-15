@@ -41,7 +41,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen;
+    @apply bg-black text-white min-h-screen;
   }
 }
 
