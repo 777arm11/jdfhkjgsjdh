@@ -4,6 +4,33 @@
 
 **URL**: https://lovable.dev/projects/598ff028-9e07-4d49-b11d-51fa89f6d295
 
+## Deploying to Telegram
+
+To deploy this game on Telegram, follow these steps:
+
+1. **Create a Telegram Bot**:
+   - Message [@BotFather](https://t.me/botfather) on Telegram
+   - Use the `/newbot` command to create a new bot
+   - Save the API token you receive
+
+2. **Enable Games for Your Bot**:
+   - Send `/mybots` to @BotFather
+   - Select your bot
+   - Choose "Games" from the menu
+   - Use `/newgame` to create a new game
+   - Set the game title and description
+   - Provide the URL where your game is hosted (use the Lovable URL or your custom domain)
+
+3. **Deploy Your Game**:
+   - Click on Share -> Publish in [Lovable](https://lovable.dev/projects/598ff028-9e07-4d49-b11d-51fa89f6d295)
+   - Copy the published URL
+   - Send it to @BotFather when setting up your game
+
+4. **Test Your Game**:
+   - Start a chat with your bot
+   - Type "@YourBot" followed by the name of your game
+   - Select the game to play it
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
@@ -52,17 +79,20 @@ npm run dev
 
 ## What technologies are used for this project?
 
-This project is built with .
+This project is built with:
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Telegram Bot API integration
 
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/598ff028-9e07-4d49-b11d-51fa89f6d295) and click on Share -> Publish.
+
+After publishing, follow the "Deploying to Telegram" section above to integrate with Telegram.
 
 ## I want to use a custom domain - is that possible?
 
