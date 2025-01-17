@@ -9,15 +9,16 @@ const Earn = () => {
   const { toast } = useToast();
   const [videoLink, setVideoLink] = useState("");
   const [videoCode, setVideoCode] = useState("");
-  // This would typically come from your auth context or environment
   const isDeveloper = process.env.NODE_ENV === 'development';
 
-  const handleWatchVideo = (videoNumber: number) => {
-    // This is a placeholder - in a real implementation, you would integrate
-    // with a video platform API
+  const handleWatchVideo = (videoNumber: number, url: string) => {
+    // Open video URL in a new tab
+    window.open(url, '_blank');
+    
+    // Show toast notification
     toast({
-      title: "Video Reward",
-      description: `You've earned 100 coins for watching video ${videoNumber}!`,
+      title: "Video Opening",
+      description: `Opening video ${videoNumber} in a new tab`,
     });
   };
 
@@ -48,6 +49,13 @@ const Earn = () => {
     setVideoCode("");
   };
 
+  // Video URLs - in a real app, these would come from your backend
+  const videos = [
+    { number: 1, url: "https://www.youtube.com/watch?v=video1" },
+    { number: 2, url: "https://www.youtube.com/watch?v=video2" },
+    { number: 3, url: "https://www.youtube.com/watch?v=video3" },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-center mb-8">Earn Coins</h1>
@@ -66,14 +74,14 @@ const Earn = () => {
                 Watch videos to earn coins. Each video completion rewards you with 100 coins.
               </p>
               <div className="grid gap-3">
-                {[1, 2, 3].map((num) => (
+                {videos.map((video) => (
                   <Button 
-                    key={num}
-                    onClick={() => handleWatchVideo(num)}
+                    key={video.number}
+                    onClick={() => handleWatchVideo(video.number, video.url)}
                     className="w-full flex items-center justify-center gap-2"
                   >
                     <Youtube className="h-5 w-5" />
-                    Watch Video {num}
+                    Watch Video {video.number}
                   </Button>
                 ))}
               </div>
