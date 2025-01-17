@@ -30,7 +30,7 @@ const Index = () => {
     const newTarget: TargetType = {
       id: Date.now(),
       position: {
-        x: Math.random() * 80 + 10, // Keep targets away from edges
+        x: Math.random() * 80 + 10,
         y: Math.random() * 80 + 10
       },
       isHit: false
@@ -38,7 +38,6 @@ const Index = () => {
 
     setTargets(prev => [...prev, newTarget]);
 
-    // Remove target after 2 seconds if not hit
     setTimeout(() => {
       setTargets(prev => prev.filter(t => t.id !== newTarget.id));
     }, 2000);
@@ -66,7 +65,6 @@ const Index = () => {
       localStorage.setItem('tappingGameHighScore', newScore.toString());
     }
 
-    // Remove hit target after animation
     setTimeout(() => {
       setTargets(prev => prev.filter(t => t.id !== targetId));
     }, 300);

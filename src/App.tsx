@@ -15,6 +15,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="*" element={<Index />} /> {/* Add catch-all route */}
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
