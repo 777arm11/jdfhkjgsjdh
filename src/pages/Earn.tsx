@@ -9,6 +9,8 @@ const Earn = () => {
   const { toast } = useToast();
   const [videoLink, setVideoLink] = useState("");
   const [videoCode, setVideoCode] = useState("");
+  // This would typically come from your auth context or environment
+  const isDeveloper = process.env.NODE_ENV === 'development';
 
   const handleWatchVideo = (videoNumber: number) => {
     // This is a placeholder - in a real implementation, you would integrate
@@ -76,35 +78,40 @@ const Earn = () => {
                 ))}
               </div>
 
-              <form onSubmit={handleSubmitVideo} className="mt-6 space-y-4">
-                <div>
-                  <label htmlFor="videoLink" className="block text-sm font-medium text-gray-700 mb-1">
-                    Video Link
-                  </label>
-                  <Input
-                    id="videoLink"
-                    type="url"
-                    placeholder="Enter video link"
-                    value={videoLink}
-                    onChange={(e) => setVideoLink(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="videoCode" className="block text-sm font-medium text-gray-700 mb-1">
-                    Video Code
-                  </label>
-                  <Input
-                    id="videoCode"
-                    type="text"
-                    placeholder="Enter video code"
-                    value={videoCode}
-                    onChange={(e) => setVideoCode(e.target.value)}
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Submit Video Details
-                </Button>
-              </form>
+              {isDeveloper && (
+                <form onSubmit={handleSubmitVideo} className="mt-6 space-y-4 border-t pt-6">
+                  <div className="bg-yellow-50 p-3 rounded-md mb-4">
+                    <p className="text-sm text-yellow-800">Developer Section</p>
+                  </div>
+                  <div>
+                    <label htmlFor="videoLink" className="block text-sm font-medium text-gray-700 mb-1">
+                      Video Link
+                    </label>
+                    <Input
+                      id="videoLink"
+                      type="url"
+                      placeholder="Enter video link"
+                      value={videoLink}
+                      onChange={(e) => setVideoLink(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="videoCode" className="block text-sm font-medium text-gray-700 mb-1">
+                      Video Code
+                    </label>
+                    <Input
+                      id="videoCode"
+                      type="text"
+                      placeholder="Enter video code"
+                      value={videoCode}
+                      onChange={(e) => setVideoCode(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Submit Video Details
+                  </Button>
+                </form>
+              )}
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
