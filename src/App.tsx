@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import Index from "./pages/Index";
 import Earn from "./pages/Earn";
+import Refer from "./pages/Refer";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/earn" element={<Earn />} />
+            <Route path="/refer" element={<Refer />} />
             <Route path="*" element={<Index />} />
           </Routes>
         </div>
