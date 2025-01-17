@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { GameController, Coins, Award, Link2, Code } from 'lucide-react';
+import { Gamepad2, Coins, Award, Link2, Code } from 'lucide-react';
 
 const Navigation = () => {
   return (
@@ -10,7 +10,7 @@ const Navigation = () => {
             to="/" 
             className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors"
           >
-            <GameController className="h-6 w-6" />
+            <Gamepad2 className="h-6 w-6" />
             <span className="text-xs">Game</span>
           </Link>
           
