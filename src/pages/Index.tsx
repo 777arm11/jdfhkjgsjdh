@@ -4,7 +4,7 @@ import ScoreBoard from '@/components/ScoreBoard';
 import GameControls from '@/components/GameControls';
 import { useToast } from '@/components/ui/use-toast';
 
-const COINS_PER_HIT = 1; // Changed from 100 to 1 coin per hit
+const COINS_PER_HIT = 1;
 const INITIAL_COINS = 5_000_000_000;
 
 const Index = () => {
@@ -41,7 +41,6 @@ const Index = () => {
 
   const updateScore = (newScore: number) => {
     setScore(newScore);
-    // Add coins for the hit
     const newCoins = coins + COINS_PER_HIT;
     setCoins(newCoins);
     localStorage.setItem('tappingGameCoins', newCoins.toString());
@@ -53,7 +52,7 @@ const Index = () => {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100">
       <ScoreBoard currentScore={score} highScore={highScore} coins={coins} />
       <GameArea 
         isPlaying={isPlaying} 
