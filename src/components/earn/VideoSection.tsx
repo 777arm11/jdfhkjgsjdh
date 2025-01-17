@@ -2,11 +2,11 @@ import { Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-// Video URLs - in a real app, these would come from your backend
+// Video URLs - Replace these URLs with your actual video links
 const videos = [
-  { number: 1, url: "https://www.youtube.com/watch?v=video1" },
-  { number: 2, url: "https://www.youtube.com/watch?v=video2" },
-  { number: 3, url: "https://www.youtube.com/watch?v=video3" },
+  { number: 1, url: "https://www.youtube.com/watch?v=your-video-1-id" },
+  { number: 2, url: "https://www.youtube.com/watch?v=your-video-2-id" },
+  { number: 3, url: "https://www.youtube.com/watch?v=your-video-3-id" },
 ];
 
 export const VideoSection = () => {
