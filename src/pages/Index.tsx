@@ -4,7 +4,7 @@ import ScoreBoard from '@/components/ScoreBoard';
 import GameControls from '@/components/GameControls';
 import { useToast } from '@/components/ui/use-toast';
 
-const COINS_PER_HIT = 100; // Coins earned per successful hit
+const COINS_PER_HIT = 1; // Changed from 100 to 1 coin per hit
 const INITIAL_COINS = 5_000_000_000;
 
 const Index = () => {
