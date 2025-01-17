@@ -11,7 +11,7 @@ const Target: React.FC<TargetProps> = ({ position, onClick, isHit }) => {
   return (
     <div
       className={cn(
-        'target absolute w-12 h-12',
+        'target absolute w-12 h-12 rounded-full overflow-hidden',
         isHit && 'target-hit'
       )}
       style={{
