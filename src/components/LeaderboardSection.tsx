@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Player {
   id: string;
@@ -10,41 +12,40 @@ interface Player {
   rank?: number;
 }
 
-// Temporary mock data - Replace with actual API call
-const mockPlayers: Player[] = Array.from({ length: 100 }, (_, i) => ({
-  id: `player-${i + 1}`,
-  username: `Player ${i + 1}`,
-  coins: Math.floor(Math.random() * 5000000000), // Random coins up to 5B
-}));
-
 export const LeaderboardSection = () => {
-  const [players, setPlayers] = useState<Player[]>([]);
   const { toast } = useToast();
 
-  const fetchLeaderboardData = async () => {
-    try {
-      // TODO: Replace with actual API call
-      const sortedPlayers = [...mockPlayers].sort((a, b) => b.coins - a.coins);
-      const rankedPlayers = sortedPlayers.map((player, index) => ({
+  const { data: players = [], isLoading, error } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: async () => {
+      console.log('Fetching leaderboard data...');
+      const { data, error } = await supabase
+        .from('players')
+        .select('id, username, coins')
+        .order('coins', { ascending: false })
+        .limit(100);
+
+      if (error) {
+        console.error('Error fetching leaderboard:', error);
+        throw error;
+      }
+
+      // Add rank to each player
+      return data.map((player, index) => ({
         ...player,
         rank: index + 1,
       }));
-      setPlayers(rankedPlayers);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch leaderboard data",
-        variant: "destructive",
-      });
-    }
-  };
+    },
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+  });
 
-  useEffect(() => {
-    fetchLeaderboardData();
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchLeaderboardData, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to fetch leaderboard data",
+      variant: "destructive",
+    });
+  }
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -62,15 +63,25 @@ export const LeaderboardSection = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {players.map((player) => (
-                <TableRow key={player.id}>
-                  <TableCell className="font-medium">{player.rank}</TableCell>
-                  <TableCell>{player.username}</TableCell>
-                  <TableCell className="text-right">
-                    {player.coins.toLocaleString()}
-                  </TableCell>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center">Loading...</TableCell>
                 </TableRow>
-              ))}
+              ) : players.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center">No players found</TableCell>
+                </TableRow>
+              ) : (
+                players.map((player) => (
+                  <TableRow key={player.id}>
+                    <TableCell className="font-medium">{player.rank}</TableCell>
+                    <TableCell>{player.username || 'Anonymous'}</TableCell>
+                    <TableCell className="text-right">
+                      {player.coins?.toLocaleString() || '0'}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
