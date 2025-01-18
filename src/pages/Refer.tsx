@@ -12,11 +12,9 @@ const Refer = () => {
   const [referralCode, setReferralCode] = useState("");
 
   useEffect(() => {
-    // Initialize Telegram WebApp
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     if (tgUser?.id) {
       setTelegramId(tgUser.id.toString());
-      // Use telegram ID as referral code (you might want to hash or encode this)
       setReferralCode(tgUser.id.toString());
     }
   }, []);
