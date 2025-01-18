@@ -18,9 +18,14 @@ interface TelegramWebApp {
   WebApp: WebApp;
 }
 
+interface TelegramGameProxy {
+  setScore: (score: number) => void;
+}
+
 declare global {
   interface Window {
     Telegram?: TelegramWebApp;
+    TelegramGameProxy?: TelegramGameProxy;
   }
 }
 
