@@ -7,6 +7,7 @@ import Index from "@/pages/Index";
 import Refer from "@/pages/Refer";
 import { LeaderboardSection } from "@/components/LeaderboardSection";
 import Navigation from "@/components/Navigation";
+import Earn from "@/pages/Earn";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ function App() {
               <Route path="/refer" element={<Refer />} />
               <Route path="/refer/:referralCode" element={<Refer />} />
               <Route path="/leaderboard" element={<LeaderboardSection />} />
+              <Route path="/earn" element={<Earn />} />
             </Routes>
             <Navigation />
             <Toaster />
