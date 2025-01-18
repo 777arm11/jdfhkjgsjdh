@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
 
 interface Player {
   id: string;
@@ -14,6 +15,7 @@ interface Player {
 
 export const LeaderboardSection = () => {
   const { toast } = useToast();
+  const { totalCoins } = useGlobalCoins();
 
   const { data: players = [], isLoading, error } = useQuery({
     queryKey: ['leaderboard'],
@@ -30,7 +32,6 @@ export const LeaderboardSection = () => {
         throw error;
       }
 
-      // Add rank to each player
       return data.map((player, index) => ({
         ...player,
         rank: index + 1,
@@ -51,6 +52,9 @@ export const LeaderboardSection = () => {
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center">Top 100 Players</CardTitle>
+        <div className="text-center text-sm text-muted-foreground">
+          Global Coin Pool: {totalCoins.toLocaleString()} coins
+        </div>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
