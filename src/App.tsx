@@ -7,6 +7,8 @@ import Navigation from "./components/Navigation";
 import Index from "./pages/Index";
 import Earn from "./pages/Earn";
 import Refer from "./pages/Refer";
+import Leaderboard from "./pages/Leaderboard";
+import Code from "./pages/Code";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +24,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/earn" element={<Earn />} />
             <Route path="/refer" element={<Refer />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/code" element={<Code />} />
             <Route path="*" element={<Index />} />
           </Routes>
         </div>
