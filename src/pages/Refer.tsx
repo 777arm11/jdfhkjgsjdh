@@ -94,7 +94,7 @@ const Refer = () => {
           
           <Button 
             onClick={handleCopyReferralLink}
-            className="w-full flex items-center justify-center gap-2"
+            className="w-full flex items-center justify-center gap-2 bg-violet-400 hover:bg-violet-500"
             disabled={!telegramId}
           >
             <Link2 className="h-5 w-5" />
