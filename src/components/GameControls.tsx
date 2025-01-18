@@ -9,7 +9,7 @@ interface GameControlsProps {
 
 const GameControls: React.FC<GameControlsProps> = ({ onStart, onReset, isPlaying }) => {
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex gap-4">
+    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 flex gap-4 md:bottom-4">
       {!isPlaying ? (
         <Button onClick={onStart} className="bg-primary hover:bg-primary/90">
           Start Game
