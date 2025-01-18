@@ -13,13 +13,11 @@ const Refer = () => {
 
   useEffect(() => {
     // Initialize Telegram WebApp
-    if (window.Telegram?.WebApp) {
-      const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-      if (tgUser?.id) {
-        setTelegramId(tgUser.id.toString());
-        // Use telegram ID as referral code (you might want to hash or encode this)
-        setReferralCode(tgUser.id.toString());
-      }
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    if (tgUser?.id) {
+      setTelegramId(tgUser.id.toString());
+      // Use telegram ID as referral code (you might want to hash or encode this)
+      setReferralCode(tgUser.id.toString());
     }
   }, []);
 
