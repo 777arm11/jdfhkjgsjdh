@@ -3,6 +3,16 @@ import GameArea from '@/components/GameArea';
 import ScoreBoard from '@/components/ScoreBoard';
 import GameControls from '@/components/GameControls';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+declare global {
+  interface Window {
+    TelegramGameProxy?: {
+      shareScore?: () => void;
+      setScore?: (score: number) => void;
+    };
+  }
+}
 
 const COINS_PER_HIT = 1;
 const INITIAL_COINS = 5_000_000_000;
@@ -23,6 +33,11 @@ const Index = () => {
     if (savedCoins) {
       setCoins(parseInt(savedCoins));
     }
+
+    // Initialize Telegram game event listeners
+    if (window.TelegramGameProxy) {
+      console.log('Telegram Game Proxy initialized');
+    }
   }, []);
 
   const startGame = () => {
@@ -39,7 +54,7 @@ const Index = () => {
     setScore(0);
   };
 
-  const updateScore = (newScore: number) => {
+  const updateScore = async (newScore: number) => {
     setScore(newScore);
     const newCoins = coins + COINS_PER_HIT;
     setCoins(newCoins);
@@ -48,6 +63,27 @@ const Index = () => {
     if (newScore > highScore) {
       setHighScore(newScore);
       localStorage.setItem('tappingGameHighScore', newScore.toString());
+      
+      // Update Telegram score
+      if (window.TelegramGameProxy?.setScore) {
+        window.TelegramGameProxy.setScore(newScore);
+      }
+
+      // Update score in Supabase if user is authenticated
+      try {
+        const telegramId = new URLSearchParams(window.location.search).get('id');
+        if (telegramId) {
+          await supabase
+            .from('players')
+            .upsert({
+              telegram_id: telegramId,
+              coins: newCoins,
+            })
+            .eq('telegram_id', telegramId);
+        }
+      } catch (error) {
+        console.error('Error updating score:', error);
+      }
     }
   };
 
