@@ -2,15 +2,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Link2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Refer = () => {
   const { toast } = useToast();
-  const referralCode = "USER123"; // This should be dynamically generated per user
+  const [telegramId, setTelegramId] = useState<string | null>(null);
   const [walletAddress, setWalletAddress] = useState("");
+  const [referralCode, setReferralCode] = useState("");
+
+  useEffect(() => {
+    // Initialize Telegram WebApp
+    if (window.Telegram?.WebApp) {
+      const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+      if (tgUser?.id) {
+        setTelegramId(tgUser.id.toString());
+        // Use telegram ID as referral code (you might want to hash or encode this)
+        setReferralCode(tgUser.id.toString());
+      }
+    }
+  }, []);
 
   const handleCopyReferralLink = async () => {
+    if (!telegramId) {
+      toast({
+        title: "Error",
+        description: "Please open this app in Telegram",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const referralLink = `${window.location.origin}/refer/${referralCode}`;
     try {
       await navigator.clipboard.writeText(referralLink);
@@ -28,11 +50,20 @@ const Refer = () => {
   };
 
   const handleSaveWallet = async () => {
+    if (!telegramId) {
+      toast({
+        title: "Error",
+        description: "Please open this app in Telegram",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('players')
         .update({ wallet_address: walletAddress })
-        .eq('telegram_id', 'USER123'); // This should be the actual user's telegram_id
+        .eq('telegram_id', telegramId);
 
       if (error) throw error;
 
@@ -62,12 +93,13 @@ const Refer = () => {
           
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
             <p className="text-sm font-medium text-gray-900">Your Referral Code</p>
-            <p className="text-lg font-mono mt-1">{referralCode}</p>
+            <p className="text-lg font-mono mt-1">{referralCode || "Loading..."}</p>
           </div>
           
           <Button 
             onClick={handleCopyReferralLink}
             className="w-full flex items-center justify-center gap-2"
+            disabled={!telegramId}
           >
             <Link2 className="h-5 w-5" />
             Copy Referral Link
@@ -91,6 +123,7 @@ const Refer = () => {
             <Button 
               onClick={handleSaveWallet}
               className="w-full"
+              disabled={!telegramId}
             >
               Save Wallet Address
             </Button>
