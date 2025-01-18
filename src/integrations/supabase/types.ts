@@ -17,6 +17,7 @@ export type Database = {
           telegram_id: string
           updated_at: string
           username: string | null
+          wallet_address: string | null
         }
         Insert: {
           coins?: number | null
@@ -25,6 +26,7 @@ export type Database = {
           telegram_id: string
           updated_at?: string
           username?: string | null
+          wallet_address?: string | null
         }
         Update: {
           coins?: number | null
@@ -33,6 +35,7 @@ export type Database = {
           telegram_id?: string
           updated_at?: string
           username?: string | null
+          wallet_address?: string | null
         }
         Relationships: []
       }

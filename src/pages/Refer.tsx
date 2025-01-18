@@ -1,10 +1,14 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Link2 } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Refer = () => {
   const { toast } = useToast();
   const referralCode = "USER123"; // This should be dynamically generated per user
+  const [walletAddress, setWalletAddress] = useState("");
 
   const handleCopyReferralLink = async () => {
     const referralLink = `${window.location.origin}/refer/${referralCode}`;
@@ -23,11 +27,33 @@ const Refer = () => {
     }
   };
 
+  const handleSaveWallet = async () => {
+    try {
+      const { error } = await supabase
+        .from('players')
+        .update({ wallet_address: walletAddress })
+        .eq('telegram_id', 'USER123'); // This should be the actual user's telegram_id
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Wallet address saved successfully",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to save wallet address",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-center mb-8">Refer Friends</h1>
       
-      <div className="max-w-md mx-auto">
+      <div className="max-w-md mx-auto space-y-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">Share Your Referral Link</h2>
           <p className="text-gray-600 mb-6">
@@ -46,6 +72,29 @@ const Refer = () => {
             <Link2 className="h-5 w-5" />
             Copy Referral Link
           </Button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4">Your Tonekeeper Wallet</h2>
+          <p className="text-gray-600 mb-6">
+            Add your Tonekeeper wallet address to receive rewards.
+          </p>
+          
+          <div className="space-y-4">
+            <Input
+              type="text"
+              placeholder="Enter your Tonekeeper wallet address"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+            />
+            
+            <Button 
+              onClick={handleSaveWallet}
+              className="w-full"
+            >
+              Save Wallet Address
+            </Button>
+          </div>
         </div>
       </div>
     </div>
