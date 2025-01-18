@@ -66,20 +66,28 @@ const Index = () => {
       
       // Update Telegram score
       if (window.TelegramGameProxy?.setScore) {
-        window.TelegramGameProxy.setScore(newScore);
+        try {
+          window.TelegramGameProxy.setScore(newScore);
+          console.log('Score updated in Telegram:', newScore);
+        } catch (error) {
+          console.error('Error updating Telegram score:', error);
+        }
       }
 
       // Update score in Supabase if user is authenticated
       try {
         const telegramId = new URLSearchParams(window.location.search).get('id');
         if (telegramId) {
-          await supabase
+          const { error } = await supabase
             .from('players')
             .upsert({
               telegram_id: telegramId,
               coins: newCoins,
-            })
-            .eq('telegram_id', telegramId);
+            });
+            
+          if (error) {
+            console.error('Error updating player data:', error);
+          }
         }
       } catch (error) {
         console.error('Error updating score:', error);
