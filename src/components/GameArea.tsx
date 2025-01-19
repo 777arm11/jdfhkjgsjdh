@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Target from '@/components/Target';
+import { cn } from '@/lib/utils';
 
 interface GameAreaProps {
   isPlaying: boolean;
@@ -15,15 +16,17 @@ interface TargetType {
 
 const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) => {
   const [targets, setTargets] = useState<TargetType[]>([]);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const generateTarget = useCallback(() => {
     if (!isPlaying) return;
     
+    // Adjusted spawn area to be more centered and accessible
     const newTarget: TargetType = {
       id: Date.now(),
       position: {
-        x: Math.random() * 80 + 10,
-        y: Math.random() * 80 + 10
+        x: Math.random() * 60 + 20, // Spawn between 20% and 80% of width
+        y: Math.random() * 60 + 20  // Spawn between 20% and 80% of height
       },
       isHit: false
     };
@@ -37,8 +40,31 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
 
   useEffect(() => {
     if (isPlaying) {
-      const interval = setInterval(generateTarget, 1000);
-      return () => clearInterval(interval);
+      // Start countdown when game starts
+      setCountdown(3);
+      const countdownInterval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev === null || prev <= 1) {
+            clearInterval(countdownInterval);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Start generating targets after countdown
+      const targetInterval = setTimeout(() => {
+        const interval = setInterval(generateTarget, 1000);
+        return () => clearInterval(interval);
+      }, 3000);
+
+      return () => {
+        clearInterval(countdownInterval);
+        clearTimeout(targetInterval);
+      };
+    } else {
+      setCountdown(null);
+      setTargets([]);
     }
   }, [isPlaying, generateTarget]);
 
@@ -68,7 +94,14 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
   }, [targets, handleTargetClick]);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full bg-gray-50/50 rounded-lg">
+      {countdown !== null && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-6xl font-bold text-primary animate-bounce">
+            {countdown}
+          </div>
+        </div>
+      )}
       {renderedTargets}
     </div>
   );
