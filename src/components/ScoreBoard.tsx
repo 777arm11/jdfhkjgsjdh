@@ -6,7 +6,7 @@ interface ScoreBoardProps {
   coins: number;
 }
 
-const ScoreBoard: React.FC<ScoreBoardProps> = ({ currentScore, highScore, coins }) => {
+const ScoreBoard: React.FC<ScoreBoardProps> = React.memo(({ currentScore, highScore, coins }) => {
   return (
     <div className="fixed top-4 right-4 bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-lg space-y-2">
       <div className="text-lg font-semibold text-primary">Score: {currentScore}</div>
@@ -16,6 +16,8 @@ const ScoreBoard: React.FC<ScoreBoardProps> = ({ currentScore, highScore, coins 
       </div>
     </div>
   );
-};
+});
+
+ScoreBoard.displayName = 'ScoreBoard';
 
 export default ScoreBoard;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Target from '@/components/Target';
 
 interface GameAreaProps {
@@ -42,7 +42,7 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
     }
   }, [isPlaying, generateTarget]);
 
-  const handleTargetClick = (targetId: number) => {
+  const handleTargetClick = useCallback((targetId: number) => {
     setTargets(prev =>
       prev.map(t =>
         t.id === targetId ? { ...t, isHit: true } : t
@@ -54,20 +54,24 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
     setTimeout(() => {
       setTargets(prev => prev.filter(t => t.id !== targetId));
     }, 300);
-  };
+  }, [score, onScoreUpdate]);
+
+  const renderedTargets = useMemo(() => {
+    return targets.map(target => (
+      <Target
+        key={target.id}
+        position={target.position}
+        isHit={target.isHit}
+        onClick={() => handleTargetClick(target.id)}
+      />
+    ));
+  }, [targets, handleTargetClick]);
 
   return (
     <div className="relative w-full h-full">
-      {targets.map(target => (
-        <Target
-          key={target.id}
-          position={target.position}
-          isHit={target.isHit}
-          onClick={() => handleTargetClick(target.id)}
-        />
-      ))}
+      {renderedTargets}
     </div>
   );
 };
 
-export default GameArea;
+export default React.memo(GameArea);

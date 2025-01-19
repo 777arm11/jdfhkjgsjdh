@@ -7,7 +7,7 @@ interface GameControlsProps {
   isPlaying: boolean;
 }
 
-const GameControls: React.FC<GameControlsProps> = ({ onStart, onReset, isPlaying }) => {
+const GameControls: React.FC<GameControlsProps> = React.memo(({ onStart, onReset, isPlaying }) => {
   return (
     <div className="fixed bottom-20 left-1/2 -translate-x-1/2 flex gap-4 md:bottom-4">
       {!isPlaying ? (
@@ -21,6 +21,8 @@ const GameControls: React.FC<GameControlsProps> = ({ onStart, onReset, isPlaying
       )}
     </div>
   );
-};
+});
+
+GameControls.displayName = 'GameControls';
 
 export default GameControls;

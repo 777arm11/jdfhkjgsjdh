@@ -7,7 +7,7 @@ interface TargetProps {
   isHit: boolean;
 }
 
-const Target: React.FC<TargetProps> = ({ position, onClick, isHit }) => {
+const Target: React.FC<TargetProps> = React.memo(({ position, onClick, isHit }) => {
   return (
     <div
       className={cn(
@@ -26,6 +26,8 @@ const Target: React.FC<TargetProps> = ({ position, onClick, isHit }) => {
       onClick={onClick}
     />
   );
-};
+});
+
+Target.displayName = 'Target';
 
 export default Target;
