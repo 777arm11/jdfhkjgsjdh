@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 // Social media URLs - Replace these with your actual channel URLs
 const socialMediaLinks = {
   youtube: "https://youtube.com/@your-channel",
-  twitter: "https://twitter.com/your-profile",
+  twitter: "https://x.com/H0peCoin",
   hopeChannel: "https://t.me/hope_2_coin",
   chaosTeam: "https://t.me/chaos-team-channel"
 };
