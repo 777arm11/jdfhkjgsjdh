@@ -11,7 +11,7 @@ const Target: React.FC<TargetProps> = React.memo(({ position, onClick, isHit }) 
   return (
     <div
       className={cn(
-        'target absolute w-16 h-16 md:w-12 md:h-12 rounded-full overflow-hidden shadow-lg',
+        'target absolute w-8 h-8 md:w-6 md:h-6 rounded-full overflow-hidden shadow-lg',
         isHit && 'target-hit'
       )}
       style={{
