@@ -11,7 +11,7 @@ export const useTargetGeneration = (isPlaying: boolean) => {
       id: Date.now(),
       position: {
         x: 50, // Fixed horizontal position at center
-        y: Math.random() * 40 + 30  // Spawn between 30-70% of height
+        y: Math.random() * 30 + 50  // Spawn between 50-80% of height
       },
       isHit: false
     };
