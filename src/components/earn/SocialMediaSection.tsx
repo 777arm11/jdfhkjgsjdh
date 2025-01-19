@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 const socialMediaLinks = {
   youtube: "https://youtube.com/@your-channel",
   twitter: "https://twitter.com/your-profile",
-  hopeChannel: "https://t.me/hope-coin-channel",
+  hopeChannel: "https://t.me/hope_2_coin",
   chaosTeam: "https://t.me/chaos-team-channel"
 };
 
