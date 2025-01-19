@@ -5,14 +5,16 @@ interface TargetProps {
   position: { x: number; y: number };
   onClick: () => void;
   isHit: boolean;
+  size?: 'large' | 'small';
 }
 
-const Target: React.FC<TargetProps> = React.memo(({ position, onClick, isHit }) => {
+const Target: React.FC<TargetProps> = React.memo(({ position, onClick, isHit, size = 'small' }) => {
   return (
     <div
       className={cn(
-        'target absolute w-8 h-8 md:w-6 md:h-6 rounded-full overflow-hidden shadow-lg',
-        isHit && 'target-hit'
+        'target absolute rounded-full overflow-hidden shadow-lg transition-all duration-300',
+        size === 'large' ? 'w-32 h-32' : 'w-8 h-8 md:w-6 md:h-6',
+        isHit && 'target-hit scale-0 opacity-0'
       )}
       style={{
         left: `${position.x}%`,

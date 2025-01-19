@@ -5,4 +5,5 @@ export interface TargetType {
     y: number;
   };
   isHit: boolean;
+  isMain?: boolean;
 }
