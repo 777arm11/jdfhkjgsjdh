@@ -21,26 +21,28 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
   const generateTarget = useCallback(() => {
     if (!isPlaying) return;
     
-    // Adjusted spawn area to be more centered and accessible
+    // Use the full game area for spawning
     const newTarget: TargetType = {
       id: Date.now(),
       position: {
-        x: Math.random() * 60 + 20, // Spawn between 20% and 80% of width
-        y: Math.random() * 60 + 20  // Spawn between 20% and 80% of height
+        x: Math.random() * 90 + 5, // Use almost the full width (5-95%)
+        y: Math.random() * 90 + 5  // Use almost the full height (5-95%)
       },
       isHit: false
     };
 
     setTargets(prev => [...prev, newTarget]);
 
+    // Random disappear time between 1.5 and 2.5 seconds
+    const disappearTime = 1500 + Math.random() * 1000;
+    
     setTimeout(() => {
       setTargets(prev => prev.filter(t => t.id !== newTarget.id));
-    }, 2000);
+    }, disappearTime);
   }, [isPlaying]);
 
   useEffect(() => {
     if (isPlaying) {
-      // Start countdown when game starts
       setCountdown(3);
       const countdownInterval = setInterval(() => {
         setCountdown(prev => {
@@ -52,10 +54,16 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
         });
       }, 1000);
 
-      // Start generating targets after countdown
+      // Start generating targets after countdown with random intervals
       const targetInterval = setTimeout(() => {
-        const interval = setInterval(generateTarget, 1000);
-        return () => clearInterval(interval);
+        const createTargetWithRandomInterval = () => {
+          generateTarget();
+          // Random interval between 800ms and 1200ms
+          const nextSpawnTime = 800 + Math.random() * 400;
+          setTimeout(createTargetWithRandomInterval, nextSpawnTime);
+        };
+        
+        createTargetWithRandomInterval();
       }, 3000);
 
       return () => {
