@@ -9,13 +9,20 @@ interface GameControlsProps {
 
 const GameControls: React.FC<GameControlsProps> = React.memo(({ onStart, onReset, isPlaying }) => {
   return (
-    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 flex gap-4 md:bottom-4">
+    <div className="flex justify-center w-full">
       {!isPlaying ? (
-        <Button onClick={onStart} className="bg-primary hover:bg-primary/90">
+        <Button 
+          onClick={onStart} 
+          className="w-32 h-12 text-lg font-medium bg-primary hover:bg-primary/90"
+        >
           Start Game
         </Button>
       ) : (
-        <Button onClick={onReset} variant="outline">
+        <Button 
+          onClick={onReset} 
+          variant="outline"
+          className="w-32 h-12 text-lg font-medium"
+        >
           Reset
         </Button>
       )}
