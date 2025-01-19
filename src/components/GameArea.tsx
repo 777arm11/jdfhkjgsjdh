@@ -21,12 +21,12 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
   const generateTarget = useCallback(() => {
     if (!isPlaying) return;
     
-    // Spawn targets in the lower half of the screen, above the navigation bar
+    // Adjusted spawn area to be more centered in the gameplay area
     const newTarget: TargetType = {
       id: Date.now(),
       position: {
-        x: Math.random() * 90 + 5, // Use almost the full width (5-95%)
-        y: Math.random() * 30 + 50  // Spawn between 50-80% of height (above nav bar)
+        x: Math.random() * 80 + 10, // Use 80% of width, with 10% margin on each side
+        y: Math.random() * 20 + 30  // Spawn between 30-50% of height for better visibility
       },
       isHit: false
     };
