@@ -16,8 +16,6 @@ const TargetList: React.FC<TargetListProps> = React.memo(({ targets, onTargetCli
           position={target.position}
           isHit={target.isHit}
           onClick={() => onTargetClick(target.id)}
-          type={target.type}
-          points={target.points}
         />
       ))}
     </>

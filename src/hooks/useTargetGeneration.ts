@@ -7,39 +7,19 @@ export const useTargetGeneration = (isPlaying: boolean) => {
   const generateTarget = useCallback(() => {
     if (!isPlaying) return;
     
-    // Random target type generation
-    const randomValue = Math.random();
-    let type: 'normal' | 'bonus' | 'speed';
-    let points: number;
-    
-    if (randomValue < 0.1) { // 10% chance for bonus
-      type = 'bonus';
-      points = 5;
-    } else if (randomValue < 0.25) { // 15% chance for speed
-      type = 'speed';
-      points = 3;
-    } else {
-      type = 'normal';
-      points = 1;
-    }
-
     const newTarget: TargetType = {
       id: Date.now(),
       position: {
-        x: 50,
-        y: Math.random() * 30 + 50
+        x: 50, // Fixed horizontal position at center
+        y: Math.random() * 30 + 50  // Spawn between 50-80% of height
       },
-      isHit: false,
-      type,
-      points
+      isHit: false
     };
 
     setTargets(prev => [...prev, newTarget]);
 
-    // Faster disappear time for speed targets
-    const baseDisappearTime = type === 'speed' ? 1000 : 1500;
-    const randomOffset = Math.random() * 1000;
-    const disappearTime = baseDisappearTime + randomOffset;
+    // Random disappear time between 1.5 and 2.5 seconds
+    const disappearTime = 1500 + Math.random() * 1000;
     
     setTimeout(() => {
       setTargets(prev => prev.filter(t => t.id !== newTarget.id));
@@ -50,11 +30,14 @@ export const useTargetGeneration = (isPlaying: boolean) => {
     if (isPlaying) {
       const createTargetWithRandomInterval = () => {
         generateTarget();
+        // Random interval between 800ms and 1200ms
         const nextSpawnTime = 800 + Math.random() * 400;
         setTimeout(createTargetWithRandomInterval, nextSpawnTime);
       };
       
+      // Start generating targets after countdown
       const targetInterval = setTimeout(createTargetWithRandomInterval, 3000);
+
       return () => clearTimeout(targetInterval);
     } else {
       setTargets([]);
