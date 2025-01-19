@@ -14,13 +14,18 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
   const [targets, setTargets] = useState<TargetType[]>([]);
   const [mainTargetHit, setMainTargetHit] = useState(false);
 
+  const getRandomPosition = () => ({
+    x: Math.random() * 80 + 10, // Keep target within 10-90% of width
+    y: Math.random() * 60 + 20, // Keep target within 20-80% of height
+  });
+
   useEffect(() => {
     if (isPlaying) {
       setCountdown(3);
       setMainTargetHit(false);
       setTargets([{
         id: Date.now(),
-        position: { x: 50, y: 50 },
+        position: getRandomPosition(),
         isHit: false,
         isMain: true
       }]);
@@ -35,26 +40,33 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
         });
       }, 1000);
 
-      return () => clearInterval(countdownInterval);
+      // Move main target randomly every 2 seconds
+      const moveInterval = setInterval(() => {
+        if (!mainTargetHit) {
+          setTargets(prev => prev.map(target => 
+            target.isMain ? { ...target, position: getRandomPosition() } : target
+          ));
+        }
+      }, 2000);
+
+      return () => {
+        clearInterval(countdownInterval);
+        clearInterval(moveInterval);
+      };
     } else {
       setCountdown(null);
       setTargets([]);
     }
-  }, [isPlaying]);
+  }, [isPlaying, mainTargetHit]);
 
   const generateSmallTargets = useCallback(() => {
     const smallTargets: TargetType[] = [];
     const numTargets = 5;
-    const radius = 20; // Distance from center
-
+    
     for (let i = 0; i < numTargets; i++) {
-      const angle = (i * 2 * Math.PI) / numTargets;
-      const x = 50 + radius * Math.cos(angle);
-      const y = 50 + radius * Math.sin(angle);
-
       smallTargets.push({
         id: Date.now() + i,
-        position: { x, y },
+        position: getRandomPosition(),
         isHit: false,
         isMain: false
       });
@@ -74,7 +86,7 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
         ...prev.map(t => t.id === targetId ? { ...t, isHit: true } : t),
         ...generateSmallTargets()
       ]);
-      onScoreUpdate(score + 2); // More points for hitting main target
+      onScoreUpdate(score + 2);
     } else if (!target.isMain) {
       setTargets(prev =>
         prev.map(t =>
@@ -84,15 +96,13 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
       onScoreUpdate(score + 1);
     }
 
-    // Check if all small targets are hit
     const remainingTargets = targets.filter(t => !t.isHit && !t.isMain).length;
     if (remainingTargets <= 1 && mainTargetHit) {
-      // Reset for next round
       setMainTargetHit(false);
       setTimeout(() => {
         setTargets([{
           id: Date.now(),
-          position: { x: 50, y: 50 },
+          position: getRandomPosition(),
           isHit: false,
           isMain: true
         }]);
@@ -101,7 +111,7 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
   }, [score, onScoreUpdate, targets, mainTargetHit, generateSmallTargets]);
 
   return (
-    <div className="relative w-full h-full bg-gray-50/50 rounded-lg">
+    <div className="relative w-full h-[calc(100vh-20rem)] bg-gray-50/50 rounded-lg">
       <CountdownTimer countdown={countdown} />
       <TargetList 
         targets={targets} 

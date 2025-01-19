@@ -24,20 +24,22 @@ const GameLayout: React.FC<GameLayoutProps> = ({
 }) => {
   return (
     <div className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-white">
-      <div className="max-w-xl mx-auto h-full px-4 py-6 flex flex-col">
+      <div className="max-w-xl mx-auto h-full px-4 py-6 flex flex-col gap-6">
         <ScoreBoard currentScore={score} highScore={highScore} coins={coins} />
-        <div className="flex-1 relative my-4">
+        <div className="flex-1 relative">
           <GameArea 
             isPlaying={isPlaying} 
             score={score} 
             onScoreUpdate={onScoreUpdate} 
           />
         </div>
-        <GameControls
-          onStart={onStart}
-          onReset={onReset}
-          isPlaying={isPlaying}
-        />
+        <div className="mb-16">
+          <GameControls
+            onStart={onStart}
+            onReset={onReset}
+            isPlaying={isPlaying}
+          />
+        </div>
       </div>
     </div>
   );
