@@ -12,7 +12,7 @@ const Target: React.FC<TargetProps> = React.memo(({ position, onClick, isHit, si
   return (
     <div
       className={cn(
-        'target absolute rounded-full overflow-hidden shadow-lg transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2',
+        'target absolute rounded-full overflow-hidden shadow-lg transition-all duration-700 ease-in-out transform -translate-x-1/2 -translate-y-1/2',
         size === 'large' ? 'w-32 h-32' : 'w-8 h-8 md:w-6 md:h-6',
         isHit && 'target-hit scale-0 opacity-0'
       )}

@@ -21,33 +21,43 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
 
   useEffect(() => {
     if (isPlaying) {
-      setCountdown(3);
+      // Reset state
       setMainTargetHit(false);
-      setTargets([{
-        id: Date.now(),
-        position: getRandomPosition(),
-        isHit: false,
-        isMain: true
-      }]);
-
+      setTargets([]);
+      
+      // Start countdown
+      setCountdown(3);
+      
       const countdownInterval = setInterval(() => {
         setCountdown(prev => {
           if (prev === null || prev <= 1) {
             clearInterval(countdownInterval);
+            // Only spawn the first target after countdown is complete
+            if (prev === 1) {
+              setTargets([{
+                id: Date.now(),
+                position: getRandomPosition(),
+                isHit: false,
+                isMain: true
+              }]);
+            }
             return null;
           }
           return prev - 1;
         });
       }, 1000);
 
-      // Move main target randomly every 2 seconds
+      // Move main target randomly every 3 seconds (increased from 2s for smoother experience)
       const moveInterval = setInterval(() => {
         if (!mainTargetHit) {
           setTargets(prev => prev.map(target => 
-            target.isMain ? { ...target, position: getRandomPosition() } : target
+            target.isMain ? { 
+              ...target, 
+              position: getRandomPosition()
+            } : target
           ));
         }
-      }, 2000);
+      }, 3000);
 
       return () => {
         clearInterval(countdownInterval);
@@ -57,7 +67,7 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
       setCountdown(null);
       setTargets([]);
     }
-  }, [isPlaying, mainTargetHit]);
+  }, [isPlaying]);
 
   const generateSmallTargets = useCallback(() => {
     const smallTargets: TargetType[] = [];
@@ -78,7 +88,7 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
   const handleTargetClick = useCallback((targetId: number) => {
     const target = targets.find(t => t.id === targetId);
     
-    if (!target) return;
+    if (!target || target.isHit) return;
 
     if (target.isMain && !mainTargetHit) {
       setMainTargetHit(true);
