@@ -9,7 +9,7 @@ interface GameControlsProps {
 
 const GameControls: React.FC<GameControlsProps> = React.memo(({ onStart, onReset, isPlaying }) => {
   return (
-    <div className="flex justify-center w-full">
+    <div className="flex justify-center w-full mb-20">
       {!isPlaying ? (
         <Button 
           onClick={onStart} 
