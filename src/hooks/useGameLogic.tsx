@@ -22,8 +22,14 @@ export const useGameLogic = () => {
       setCoins(parseInt(savedCoins));
     }
 
+    // Initialize Telegram Game Proxy
     if (window.TelegramGameProxy) {
       console.log('Telegram Game Proxy initialized');
+      try {
+        window.TelegramGameProxy.initGame();
+      } catch (error) {
+        console.error('Error initializing Telegram Game:', error);
+      }
     }
   }, []);
 
@@ -63,7 +69,9 @@ export const useGameLogic = () => {
 
       // Update score in Supabase if user is authenticated
       try {
-        const telegramId = new URLSearchParams(window.location.search).get('id');
+        const urlParams = new URLSearchParams(window.location.search);
+        const telegramId = urlParams.get('id');
+        
         if (telegramId) {
           const { error } = await supabase
             .from('players')
