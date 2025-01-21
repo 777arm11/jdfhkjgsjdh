@@ -49,38 +49,38 @@ export const LeaderboardSection = () => {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto bg-game-secondary border-game-accent">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Top 100 Players</CardTitle>
-        <div className="text-center text-sm text-muted-foreground">
+        <CardTitle className="text-2xl font-pixel text-center text-white">Top 100 Players</CardTitle>
+        <div className="text-center text-sm font-pixel text-white/80">
           Global Coin Pool: {totalCoins.toLocaleString()} coins
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
+        <div className="rounded-md border border-game-accent">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-24">Rank</TableHead>
-                <TableHead>Player</TableHead>
-                <TableHead className="text-right">Coins</TableHead>
+              <TableRow className="border-b border-game-accent">
+                <TableHead className="w-24 text-white/80 font-pixel">Rank</TableHead>
+                <TableHead className="text-white/80 font-pixel">Player</TableHead>
+                <TableHead className="text-right text-white/80 font-pixel">Coins</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center">Loading...</TableCell>
+                  <TableCell colSpan={3} className="text-center text-white font-pixel">Loading...</TableCell>
                 </TableRow>
               ) : players.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center">No players found</TableCell>
+                  <TableCell colSpan={3} className="text-center text-white font-pixel">No players found</TableCell>
                 </TableRow>
               ) : (
                 players.map((player) => (
-                  <TableRow key={player.id}>
-                    <TableCell className="font-medium">{player.rank}</TableCell>
-                    <TableCell>{player.username || 'Anonymous'}</TableCell>
-                    <TableCell className="text-right">
+                  <TableRow key={player.id} className="border-b border-game-accent hover:bg-game-accent/20">
+                    <TableCell className="font-pixel text-white">{player.rank}</TableCell>
+                    <TableCell className="font-pixel text-white">{player.username || 'Anonymous'}</TableCell>
+                    <TableCell className="text-right font-pixel text-white">
                       {player.coins?.toLocaleString() || '0'}
                     </TableCell>
                   </TableRow>

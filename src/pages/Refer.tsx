@@ -77,24 +77,24 @@ const Refer = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 mb-20">
-      <h1 className="text-2xl font-bold text-center mb-8">Refer Friends</h1>
+    <div className="container mx-auto px-4 py-8 mb-20 min-h-screen bg-game-primary">
+      <h1 className="text-2xl font-pixel text-white text-center mb-8">Refer Friends</h1>
       
       <div className="max-w-md mx-auto space-y-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Share Your Referral Link</h2>
-          <p className="text-gray-600 mb-6">
+        <div className="bg-game-secondary rounded-lg shadow-md p-6 border border-game-accent">
+          <h2 className="text-xl font-pixel text-white mb-4">Share Your Referral Link</h2>
+          <p className="text-white/80 font-pixel text-sm mb-6">
             Invite your friends to join and earn rewards! You'll receive 100 coins for each friend who joins using your referral link.
           </p>
           
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <p className="text-sm font-medium text-gray-900">Your Referral Code</p>
-            <p className="text-lg font-mono mt-1">{referralCode || "Loading..."}</p>
+          <div className="bg-game-accent p-4 rounded-lg mb-6">
+            <p className="text-sm font-pixel text-white">Your Referral Code</p>
+            <p className="text-lg font-pixel text-white mt-1">{referralCode || "Loading..."}</p>
           </div>
           
           <Button 
             onClick={handleCopyReferralLink}
-            className="w-full flex items-center justify-center gap-2 bg-violet-400 hover:bg-violet-500"
+            className="w-full flex items-center justify-center gap-2 bg-game-accent hover:bg-game-accent/80 text-white font-pixel"
             disabled={!telegramId}
           >
             <Link2 className="h-5 w-5" />
@@ -102,9 +102,9 @@ const Refer = () => {
           </Button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Your Tonekeeper Wallet</h2>
-          <p className="text-gray-600 mb-6">
+        <div className="bg-game-secondary rounded-lg shadow-md p-6 border border-game-accent">
+          <h2 className="text-xl font-pixel text-white mb-4">Your Tonekeeper Wallet</h2>
+          <p className="text-white/80 font-pixel text-sm mb-6">
             Add your Tonekeeper wallet address to receive rewards.
           </p>
           
@@ -114,11 +114,12 @@ const Refer = () => {
               placeholder="Enter your Tonekeeper wallet address"
               value={walletAddress}
               onChange={(e) => setWalletAddress(e.target.value)}
+              className="bg-game-accent border-game-accent text-white font-pixel placeholder:text-white/50"
             />
             
             <Button 
               onClick={handleSaveWallet}
-              className="w-full"
+              className="w-full bg-game-accent hover:bg-game-accent/80 text-white font-pixel"
               disabled={!telegramId}
             >
               Save Wallet Address
