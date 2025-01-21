@@ -8,10 +8,12 @@ interface ScoreBoardProps {
 
 const ScoreBoard: React.FC<ScoreBoardProps> = React.memo(({ currentScore, highScore, coins }) => {
   return (
-    <div className="w-full space-y-2 text-center">
-      <div className="text-2xl font-bold text-purple-600">Score: {currentScore}</div>
-      <div className="text-lg text-gray-600">High Score: {highScore}</div>
-      <div className="text-lg font-medium text-orange-500">
+    <div className="w-full space-y-4 text-center font-pixel">
+      <div className="text-2xl font-bold text-game-text border-2 border-game-text p-4 bg-game-secondary">
+        Score: {currentScore}
+      </div>
+      <div className="text-lg text-game-text">High Score: {highScore}</div>
+      <div className="text-lg font-medium text-game-text">
         Coins: {coins.toLocaleString()}
       </div>
     </div>

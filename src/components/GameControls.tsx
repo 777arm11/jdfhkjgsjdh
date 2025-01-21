@@ -13,7 +13,7 @@ const GameControls: React.FC<GameControlsProps> = React.memo(({ onStart, onReset
       {!isPlaying ? (
         <Button 
           onClick={onStart} 
-          className="w-32 h-12 text-lg font-medium bg-primary hover:bg-primary/90"
+          className="w-48 h-16 text-lg font-pixel bg-game-primary hover:bg-game-secondary text-game-text border-2 border-game-text transition-colors"
         >
           Start Game
         </Button>
@@ -21,7 +21,7 @@ const GameControls: React.FC<GameControlsProps> = React.memo(({ onStart, onReset
         <Button 
           onClick={onReset} 
           variant="outline"
-          className="w-32 h-12 text-lg font-medium"
+          className="w-48 h-16 text-lg font-pixel bg-game-secondary hover:bg-game-primary text-game-text border-2 border-game-text transition-colors"
         >
           Reset
         </Button>

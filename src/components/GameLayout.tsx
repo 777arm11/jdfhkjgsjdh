@@ -23,7 +23,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   onReset
 }) => {
   return (
-    <div className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-white">
+    <div className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-game-primary">
       <div className="max-w-xl mx-auto h-full px-4 py-6 flex flex-col gap-6">
         <ScoreBoard currentScore={score} highScore={highScore} coins={coins} />
         <div className="flex-1 relative">
