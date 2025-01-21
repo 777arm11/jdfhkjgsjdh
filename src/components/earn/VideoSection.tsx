@@ -13,12 +13,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
-// Video URLs and verification codes - Replace these with your actual video links and codes
 const videos = [
   { 
     number: 1, 
     url: "https://www.youtube.com/watch?v=your-video-1-id",
-    verificationCode: "CODE1" // This should come from your backend
+    verificationCode: "CODE1"
   },
   { 
     number: 2, 
@@ -50,7 +49,6 @@ export const VideoSection = () => {
         title: "Success!",
         description: "You've earned 100 coins for watching the video!",
       });
-      // Here you would typically call your backend to award the coins
       setIsVerificationOpen(false);
       setVerificationCode("");
     } else {
@@ -63,9 +61,9 @@ export const VideoSection = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-game-secondary rounded-lg border-2 border-game-text p-6">
       <h2 className="text-xl font-semibold mb-4">Watch Videos</h2>
-      <p className="text-gray-600 mb-4">
+      <p className="text-game-text/80 mb-4">
         Watch videos and enter the verification code shown to earn 100 coins per video.
       </p>
       <div className="grid gap-3">
@@ -73,7 +71,7 @@ export const VideoSection = () => {
           <Button 
             key={video.number}
             onClick={() => handleWatchVideo(video)}
-            className="w-full flex items-center justify-center gap-2"
+            className="w-full flex items-center justify-center gap-2 bg-game-primary hover:bg-game-accent border-2 border-game-text text-game-text"
           >
             <Youtube className="h-5 w-5" />
             Watch Video {video.number}
@@ -82,10 +80,10 @@ export const VideoSection = () => {
       </div>
 
       <AlertDialog open={isVerificationOpen} onOpenChange={setIsVerificationOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-game-secondary border-2 border-game-text">
           <AlertDialogHeader>
-            <AlertDialogTitle>Enter Verification Code</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-game-text">Enter Verification Code</AlertDialogTitle>
+            <AlertDialogDescription className="text-game-text/80">
               Please enter the verification code shown in the video to receive your coins.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -95,11 +93,19 @@ export const VideoSection = () => {
               placeholder="Enter code"
               value={verificationCode}
               onChange={(e) => setVerificationCode(e.target.value)}
+              className="bg-game-primary text-game-text border-game-text"
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setVerificationCode("")}>Cancel</AlertDialogCancel>
-            <Button onClick={handleVerifyCode}>Verify Code</Button>
+            <AlertDialogCancel className="bg-game-accent text-game-text border-game-text hover:bg-game-primary">
+              Cancel
+            </AlertDialogCancel>
+            <Button 
+              onClick={handleVerifyCode}
+              className="bg-game-primary text-game-text border-2 border-game-text hover:bg-game-accent"
+            >
+              Verify Code
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

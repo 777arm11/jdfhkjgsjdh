@@ -25,11 +25,6 @@ export const useGameLogic = () => {
     // Initialize Telegram Game Proxy
     if (window.TelegramGameProxy) {
       console.log('Telegram Game Proxy initialized');
-      try {
-        window.TelegramGameProxy.initGame();
-      } catch (error) {
-        console.error('Error initializing Telegram Game:', error);
-      }
     }
   }, []);
 
