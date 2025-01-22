@@ -1,4 +1,5 @@
 import React from 'react';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ScoreBoardProps {
   currentScore: number;
@@ -14,7 +15,11 @@ const ScoreBoard: React.FC<ScoreBoardProps> = React.memo(({ currentScore, highSc
       </div>
       <div className="text-lg text-game-text">High Score: {highScore}</div>
       <div className="text-lg font-medium text-game-text">
-        Coins: {coins.toLocaleString()}
+        {typeof coins === 'number' ? (
+          `Coins: ${coins.toLocaleString()}`
+        ) : (
+          <Skeleton className="h-6 w-32 mx-auto" />
+        )}
       </div>
     </div>
   );
