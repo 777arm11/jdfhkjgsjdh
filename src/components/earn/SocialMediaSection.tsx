@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
 
 const socialMediaLinks = {
-  youtube: "https://youtube.com/@your-channel",
+  youtube: "https://www.youtube.com/channel/UCHb5HtX4iGaRxEG0sweHyyg",
   twitter: "https://x.com/H0peCoin",
   hopeChannel: "https://t.me/hope_2_coin",
   chaosTeam: "https://t.me/chaos-team-channel"
