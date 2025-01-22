@@ -1,6 +1,8 @@
 import { Youtube, Twitter, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
 
 const socialMediaLinks = {
   youtube: "https://youtube.com/@your-channel",
@@ -11,15 +13,55 @@ const socialMediaLinks = {
 
 export const SocialMediaSection = () => {
   const { toast } = useToast();
+  const { totalCoins } = useGlobalCoins();
 
-  const handleSocialMediaEngage = (platform: string) => {
-    const url = socialMediaLinks[platform as keyof typeof socialMediaLinks];
-    window.open(url, '_blank');
-    
-    toast({
-      title: "Social Media Engagement",
-      description: `You've earned 50 coins for engaging on ${platform}!`,
-    });
+  const handleSocialMediaEngage = async (platform: string) => {
+    if (totalCoins < 50) {
+      toast({
+        title: "Global Pool Depleted",
+        description: "The global coin pool has been depleted!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const telegramId = urlParams.get('id');
+
+      if (!telegramId) {
+        toast({
+          title: "Error",
+          description: "Please open this app in Telegram",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('players')
+        .update({ 
+          coins: supabase.rpc('increment', { amount: 50 })
+        })
+        .eq('telegram_id', telegramId);
+
+      if (error) throw error;
+
+      const url = socialMediaLinks[platform as keyof typeof socialMediaLinks];
+      window.open(url, '_blank');
+      
+      toast({
+        title: "Social Media Engagement",
+        description: `You've earned 50 coins for engaging on ${platform}!`,
+      });
+    } catch (error) {
+      console.error('Error updating coins:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update coins. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

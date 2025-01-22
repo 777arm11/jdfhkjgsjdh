@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
 
 const videos = [
   { 
@@ -36,6 +38,7 @@ export const VideoSection = () => {
   const [isVerificationOpen, setIsVerificationOpen] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [currentVideo, setCurrentVideo] = useState<typeof videos[0] | null>(null);
+  const { totalCoins } = useGlobalCoins();
 
   const handleWatchVideo = (video: typeof videos[0]) => {
     setCurrentVideo(video);
@@ -43,18 +46,59 @@ export const VideoSection = () => {
     setIsVerificationOpen(true);
   };
 
-  const handleVerifyCode = () => {
-    if (currentVideo && verificationCode === currentVideo.verificationCode) {
+  const handleVerifyCode = async () => {
+    if (!currentVideo || verificationCode !== currentVideo.verificationCode) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter the correct verification code shown in the video.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (totalCoins < 100) {
+      toast({
+        title: "Global Pool Depleted",
+        description: "The global coin pool has been depleted!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const telegramId = urlParams.get('id');
+
+      if (!telegramId) {
+        toast({
+          title: "Error",
+          description: "Please open this app in Telegram",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('players')
+        .update({ 
+          coins: supabase.rpc('increment', { amount: 100 })
+        })
+        .eq('telegram_id', telegramId);
+
+      if (error) throw error;
+
       toast({
         title: "Success!",
         description: "You've earned 100 coins for watching the video!",
       });
+      
       setIsVerificationOpen(false);
       setVerificationCode("");
-    } else {
+    } catch (error) {
+      console.error('Error updating coins:', error);
       toast({
-        title: "Invalid Code",
-        description: "Please enter the correct verification code shown in the video.",
+        title: "Error",
+        description: "Failed to update coins. Please try again.",
         variant: "destructive",
       });
     }
