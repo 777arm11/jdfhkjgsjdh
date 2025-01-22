@@ -38,12 +38,10 @@ export const SocialMediaSection = () => {
         return;
       }
 
-      const { error } = await supabase
-        .from('players')
-        .update({ 
-          coins: supabase.rpc('increment', { amount: 50 })
-        })
-        .eq('telegram_id', telegramId);
+      const { error } = await supabase.rpc('increment_coins', {
+        user_telegram_id: telegramId,
+        increment_amount: 50
+      });
 
       if (error) throw error;
 

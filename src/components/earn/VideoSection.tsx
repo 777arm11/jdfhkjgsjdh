@@ -78,12 +78,10 @@ export const VideoSection = () => {
         return;
       }
 
-      const { error } = await supabase
-        .from('players')
-        .update({ 
-          coins: supabase.rpc('increment', { amount: 100 })
-        })
-        .eq('telegram_id', telegramId);
+      const { error } = await supabase.rpc('increment_coins', {
+        user_telegram_id: telegramId,
+        increment_amount: 100
+      });
 
       if (error) throw error;
 
