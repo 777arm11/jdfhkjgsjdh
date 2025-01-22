@@ -44,7 +44,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_coins: {
+        Args: {
+          user_telegram_id: string
+          increment_amount: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

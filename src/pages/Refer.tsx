@@ -29,17 +29,28 @@ const Refer = () => {
       return;
     }
 
-    const referralLink = `${window.location.origin}/refer/${referralCode}`;
     try {
+      // Create a proper referral link with the base URL and referral code
+      const referralLink = `https://t.me/YourBotUsername?start=ref_${referralCode}`;
       await navigator.clipboard.writeText(referralLink);
+      
+      // Increment coins for sharing the referral link
+      const { error: incrementError } = await supabase.rpc('increment_coins', {
+        user_telegram_id: telegramId,
+        increment_amount: 100
+      });
+
+      if (incrementError) throw incrementError;
+
       toast({
         title: "Success!",
-        description: "Referral link copied to clipboard",
+        description: "Referral link copied to clipboard and you earned 100 coins!",
       });
     } catch (err) {
+      console.error('Error handling referral:', err);
       toast({
         title: "Error",
-        description: "Failed to copy referral link",
+        description: "Failed to process referral link",
         variant: "destructive",
       });
     }
@@ -68,6 +79,7 @@ const Refer = () => {
         description: "Wallet address saved successfully",
       });
     } catch (err) {
+      console.error('Error saving wallet:', err);
       toast({
         title: "Error",
         description: "Failed to save wallet address",
