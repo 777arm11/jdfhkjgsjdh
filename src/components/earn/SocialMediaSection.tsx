@@ -1,8 +1,8 @@
 import { Youtube, Twitter, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
+import { SocialMediaItem } from "./SocialMediaItem";
+import { handleCoinIncrement } from "@/utils/coinUtils";
 
 const socialMediaLinks = {
   youtube: "https://www.youtube.com/channel/UCHb5HtX4iGaRxEG0sweHyyg",
@@ -10,6 +10,13 @@ const socialMediaLinks = {
   hopeChannel: "https://t.me/hope_2_coin",
   chaosTeam: "https://t.me/chaos-team-channel"
 };
+
+const socialMediaItems = [
+  { platform: "youtube", icon: Youtube, label: "Subscribe on YouTube" },
+  { platform: "twitter", icon: Twitter, label: "Follow on Twitter" },
+  { platform: "hopeChannel", icon: MessageCircle, label: "Join Hope Coin Channel" },
+  { platform: "chaosTeam", icon: MessageCircle, label: "Join Chaos Team Channel" },
+];
 
 export const SocialMediaSection = () => {
   const { toast } = useToast();
@@ -28,22 +35,8 @@ export const SocialMediaSection = () => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const telegramId = urlParams.get('id');
-
-      if (!telegramId) {
-        toast({
-          title: "Error",
-          description: "Please open this app in Telegram",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await supabase.rpc('increment_coins', {
-        user_telegram_id: telegramId,
-        increment_amount: 50
-      });
-
-      if (error) throw error;
+      
+      await handleCoinIncrement(telegramId, 50);
 
       const url = socialMediaLinks[platform as keyof typeof socialMediaLinks];
       window.open(url, '_blank');
@@ -69,34 +62,14 @@ export const SocialMediaSection = () => {
         Engage with our social media accounts to earn coins. Each engagement rewards you with 50 coins.
       </p>
       <div className="grid gap-3">
-        <Button 
-          onClick={() => handleSocialMediaEngage("youtube")}
-          className="w-full flex items-center justify-center gap-2 bg-game-primary hover:bg-game-accent border-2 border-game-text text-game-text"
-        >
-          <Youtube className="h-5 w-5" />
-          Subscribe on YouTube
-        </Button>
-        <Button 
-          onClick={() => handleSocialMediaEngage("twitter")}
-          className="w-full flex items-center justify-center gap-2 bg-game-primary hover:bg-game-accent border-2 border-game-text text-game-text"
-        >
-          <Twitter className="h-5 w-5" />
-          Follow on Twitter
-        </Button>
-        <Button 
-          onClick={() => handleSocialMediaEngage("hopeChannel")}
-          className="w-full flex items-center justify-center gap-2 bg-game-primary hover:bg-game-accent border-2 border-game-text text-game-text"
-        >
-          <MessageCircle className="h-5 w-5" />
-          Join Hope Coin Channel
-        </Button>
-        <Button 
-          onClick={() => handleSocialMediaEngage("chaosTeam")}
-          className="w-full flex items-center justify-center gap-2 bg-game-primary hover:bg-game-accent border-2 border-game-text text-game-text"
-        >
-          <MessageCircle className="h-5 w-5" />
-          Join Chaos Team Channel
-        </Button>
+        {socialMediaItems.map((item) => (
+          <SocialMediaItem
+            key={item.platform}
+            icon={item.icon}
+            label={item.label}
+            onClick={() => handleSocialMediaEngage(item.platform)}
+          />
+        ))}
       </div>
     </div>
   );

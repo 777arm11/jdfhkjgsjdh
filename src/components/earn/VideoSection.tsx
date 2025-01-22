@@ -1,19 +1,9 @@
-import { Youtube } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
+import { VideoItem } from "./VideoItem";
+import { VerificationDialog } from "./VerificationDialog";
+import { handleCoinIncrement } from "@/utils/coinUtils";
 
 const videos = [
   { 
@@ -68,22 +58,8 @@ export const VideoSection = () => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const telegramId = urlParams.get('id');
-
-      if (!telegramId) {
-        toast({
-          title: "Error",
-          description: "Please open this app in Telegram",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await supabase.rpc('increment_coins', {
-        user_telegram_id: telegramId,
-        increment_amount: 100
-      });
-
-      if (error) throw error;
+      
+      await handleCoinIncrement(telegramId, 100);
 
       toast({
         title: "Success!",
@@ -110,47 +86,21 @@ export const VideoSection = () => {
       </p>
       <div className="grid gap-3">
         {videos.map((video) => (
-          <Button 
+          <VideoItem 
             key={video.number}
-            onClick={() => handleWatchVideo(video)}
-            className="w-full flex items-center justify-center gap-2 bg-game-primary hover:bg-game-accent border-2 border-game-text text-game-text"
-          >
-            <Youtube className="h-5 w-5" />
-            Watch Video {video.number}
-          </Button>
+            number={video.number}
+            onWatch={() => handleWatchVideo(video)}
+          />
         ))}
       </div>
 
-      <AlertDialog open={isVerificationOpen} onOpenChange={setIsVerificationOpen}>
-        <AlertDialogContent className="bg-game-secondary border-2 border-game-text">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-game-text">Enter Verification Code</AlertDialogTitle>
-            <AlertDialogDescription className="text-game-text/80">
-              Please enter the verification code shown in the video to receive your coins.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="my-4">
-            <Input
-              type="text"
-              placeholder="Enter code"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              className="bg-game-primary text-game-text border-game-text"
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-game-accent text-game-text border-game-text hover:bg-game-primary">
-              Cancel
-            </AlertDialogCancel>
-            <Button 
-              onClick={handleVerifyCode}
-              className="bg-game-primary text-game-text border-2 border-game-text hover:bg-game-accent"
-            >
-              Verify Code
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <VerificationDialog
+        isOpen={isVerificationOpen}
+        onOpenChange={setIsVerificationOpen}
+        verificationCode={verificationCode}
+        onVerificationCodeChange={setVerificationCode}
+        onVerify={handleVerifyCode}
+      />
     </div>
   );
 };
