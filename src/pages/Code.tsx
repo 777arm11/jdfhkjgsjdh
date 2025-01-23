@@ -1,10 +1,77 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FileCode2, Gift } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
 
 const Code = () => {
+  const [code, setCode] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const { totalCoins } = useGlobalCoins();
+
+  const handleRedeemCode = async () => {
+    if (!code.trim()) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter a valid creator code",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const urlParams = new URLSearchParams(window.location.search);
+      const telegramId = urlParams.get('id');
+
+      if (!telegramId) {
+        toast({
+          title: "Error",
+          description: "Please open this app in Telegram",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (totalCoins < 100) {
+        toast({
+          title: "Global Pool Depleted",
+          description: "The global coin pool has been depleted!",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Verify and process the code
+      const { error } = await supabase.rpc('increment_coins', {
+        user_telegram_id: telegramId,
+        increment_amount: 100
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "You've received 100 coins from the code!",
+      });
+      
+      setCode("");
+    } catch (error) {
+      console.error('Error redeeming code:', error);
+      toast({
+        title: "Error",
+        description: "Failed to redeem code. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="container py-8 px-4 md:px-8 min-h-screen bg-game-primary">
       <Card className="w-full max-w-2xl mx-auto bg-game-secondary border-game-accent">
@@ -25,14 +92,19 @@ const Code = () => {
               <Input 
                 placeholder="Enter code here..."
                 className="h-12 text-lg text-center uppercase tracking-wider bg-game-accent border-game-accent text-white font-pixel placeholder:text-white/50"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
             <Button 
-              className="w-full h-12 text-lg font-pixel group transition-all duration-300 hover:shadow-lg bg-game-accent hover:bg-game-accent/80 text-white"
+              className="w-full h-12 text-lg font-pixel group transition-all duration-300 hover:shadow-lg bg-game-accent hover:bg-game-accent/80 text-white disabled:opacity-50"
               variant="default"
+              onClick={handleRedeemCode}
+              disabled={isSubmitting}
             >
-              <Gift className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-              Redeem Rewards
+              <Gift className={`mr-2 h-5 w-5 transition-transform ${isSubmitting ? 'animate-spin' : 'group-hover:scale-110'}`} />
+              {isSubmitting ? 'Redeeming...' : 'Redeem Rewards'}
             </Button>
           </div>
           
