@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { FileCode2, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
 
 const Code = () => {
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { totalCoins } = useGlobalCoins();
 
   const handleRedeemCode = async () => {
     if (!code.trim()) {
@@ -43,6 +45,15 @@ const Code = () => {
 
       if (error) throw error;
 
+      if (data === -1) {
+        toast({
+          title: "Pool Depleted",
+          description: "The global coin pool has been depleted. No more coins can be redeemed at this time.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (data === 0) {
         toast({
           title: "Invalid Code",
@@ -54,7 +65,7 @@ const Code = () => {
 
       toast({
         title: "Success!",
-        description: `You've received ${data} coins from the code!`,
+        description: `You've received ${data.toLocaleString()} coins from the code!`,
       });
       
       setCode("");
@@ -83,6 +94,9 @@ const Code = () => {
           <CardDescription className="text-center text-base font-pixel text-white/80">
             Enter your content creator code below to receive special rewards
           </CardDescription>
+          <div className="text-center text-sm font-pixel text-white/60">
+            Remaining in pool: {totalCoins.toLocaleString()} coins
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
