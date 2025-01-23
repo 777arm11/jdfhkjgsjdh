@@ -1,0 +1,75 @@
+import { useState, useCallback } from 'react';
+import { TargetType } from '@/types/game';
+
+const getRandomPosition = () => ({
+  x: Math.random() * 80 + 10,
+  y: Math.random() * 60 + 20,
+});
+
+export const useTargetManagement = (score: number, onScoreUpdate: (newScore: number) => void) => {
+  const [targets, setTargets] = useState<TargetType[]>([]);
+  const [mainTargetHit, setMainTargetHit] = useState(false);
+
+  const generateSmallTargets = useCallback(() => {
+    const smallTargets: TargetType[] = [];
+    const numTargets = 5;
+    
+    for (let i = 0; i < numTargets; i++) {
+      smallTargets.push({
+        id: Date.now() + i,
+        position: getRandomPosition(),
+        isHit: false,
+        isMain: false
+      });
+    }
+
+    return smallTargets;
+  }, []);
+
+  const spawnMainTarget = useCallback(() => {
+    setTargets([{
+      id: Date.now(),
+      position: getRandomPosition(),
+      isHit: false,
+      isMain: true
+    }]);
+    setMainTargetHit(false);
+  }, []);
+
+  const handleTargetClick = useCallback((targetId: number) => {
+    const target = targets.find(t => t.id === targetId);
+    
+    if (!target || target.isHit) return;
+
+    if (target.isMain && !mainTargetHit) {
+      setMainTargetHit(true);
+      setTargets(prev => [
+        ...prev.map(t => t.id === targetId ? { ...t, isHit: true } : t),
+        ...generateSmallTargets()
+      ]);
+      onScoreUpdate(score + 2);
+    } else if (!target.isMain) {
+      setTargets(prev =>
+        prev.map(t =>
+          t.id === targetId ? { ...t, isHit: true } : t
+        ).filter(t => !t.isHit || t.id !== targetId)
+      );
+      onScoreUpdate(score + 1);
+    }
+
+    const remainingTargets = targets.filter(t => !t.isHit && !t.isMain).length;
+    if (remainingTargets <= 1 && mainTargetHit) {
+      setMainTargetHit(false);
+      setTimeout(spawnMainTarget, 1000);
+    }
+  }, [score, onScoreUpdate, targets, mainTargetHit, generateSmallTargets, spawnMainTarget]);
+
+  return {
+    targets,
+    setTargets,
+    mainTargetHit,
+    setMainTargetHit,
+    handleTargetClick,
+    spawnMainTarget
+  };
+};
