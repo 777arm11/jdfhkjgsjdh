@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Target as TargetIcon } from "lucide-react";
+import { Target } from "lucide-react";
 
 interface TargetProps {
   position: { x: number; y: number };
@@ -10,7 +10,7 @@ interface TargetProps {
   isUpdating?: boolean;
 }
 
-export const TargetButton: React.FC<TargetProps> = ({
+export const Target: React.FC<TargetProps> = ({
   position,
   onClick,
   isActive = true,
@@ -31,7 +31,7 @@ export const TargetButton: React.FC<TargetProps> = ({
       onClick={onClick}
       disabled={!isActive || isUpdating}
     >
-      <TargetIcon className={cn(
+      <Target className={cn(
         "w-6 h-6",
         isUpdating && "animate-spin"
       )} />
