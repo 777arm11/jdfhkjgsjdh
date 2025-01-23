@@ -11,15 +11,25 @@ export const useGameLogic = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const { toast } = useToast();
 
+  // Get telegram ID from URL
+  const getTelegramId = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const telegramId = urlParams.get('id');
+    if (!telegramId) {
+      console.log('No telegram ID found in URL');
+      return null;
+    }
+    return telegramId;
+  };
+
   // Fetch player data including coins from database
   const { data: playerData, error: playerError } = useQuery({
     queryKey: ['player'],
     queryFn: async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const telegramId = urlParams.get('id');
+      const telegramId = getTelegramId();
       
       if (!telegramId) {
-        throw new Error('No telegram ID found');
+        throw new Error('Please open this game through Telegram');
       }
 
       const { data, error } = await supabase
@@ -31,6 +41,15 @@ export const useGameLogic = () => {
       if (error) throw error;
       return data;
     },
+    retry: false,
+    onError: (error) => {
+      console.error('Error fetching player data:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to load player data",
+        variant: "destructive",
+      });
+    }
   });
 
   useEffect(() => {
@@ -47,6 +66,16 @@ export const useGameLogic = () => {
   }, []);
 
   const startGame = () => {
+    const telegramId = getTelegramId();
+    if (!telegramId) {
+      toast({
+        title: "Error",
+        description: "Please open this game through Telegram",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsPlaying(true);
     setScore(0);
     toast({
@@ -62,13 +91,17 @@ export const useGameLogic = () => {
 
   const updateScore = async (newScore: number) => {
     try {
-      setScore(newScore);
-      const urlParams = new URLSearchParams(window.location.search);
-      const telegramId = urlParams.get('id');
-      
+      const telegramId = getTelegramId();
       if (!telegramId) {
-        throw new Error('No telegram ID found');
+        toast({
+          title: "Error",
+          description: "Please open this game through Telegram",
+          variant: "destructive",
+        });
+        return;
       }
+
+      setScore(newScore);
 
       // Update coins in database
       const { error: incrementError } = await supabase.rpc('increment_coins', {
