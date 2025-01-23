@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Target2 } from "lucide-react";
+import { Target } from "lucide-react";
 
 interface TargetProps {
   position: { x: number; y: number };
@@ -31,7 +31,7 @@ export const Target: React.FC<TargetProps> = ({
       onClick={onClick}
       disabled={!isActive || isUpdating}
     >
-      <Target2 className={cn(
+      <Target className={cn(
         "w-6 h-6",
         isUpdating && "animate-spin"
       )} />

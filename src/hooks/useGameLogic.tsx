@@ -1,67 +1,54 @@
-import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useCallback } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 
 export const useGameLogic = () => {
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [coins, setCoins] = useState(0);
   const { toast } = useToast();
 
   const updateScore = useCallback(async (points: number) => {
     try {
       setIsUpdating(true);
-      const urlParams = new URLSearchParams(window.location.search);
-      const telegramId = urlParams.get('id');
-
-      if (!telegramId) {
-        toast({
-          title: "Error",
-          description: "Please open this game in Telegram",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await supabase.rpc('increment_coins', {
-        user_telegram_id: telegramId,
-        increment_amount: points
-      });
-
-      if (error) {
-        console.error('Error updating score:', error);
-        toast({
-          title: "Error",
-          description: "Failed to update score. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setScore((prevScore) => prevScore + points);
-      toast({
-        title: "Success!",
-        description: `You earned ${points} coins!`,
-      });
+      setScore(prev => prev + points);
+      // Update high score if current score is higher
+      setHighScore(prev => Math.max(prev, score + points));
     } catch (error) {
-      console.error('Error updating score:', error);
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
+        title: "Error updating score",
+        description: "Please try again",
         variant: "destructive",
       });
     } finally {
       setIsUpdating(false);
     }
-  }, [toast]);
+  }, [score, toast]);
 
   const resetScore = useCallback(() => {
     setScore(0);
   }, []);
 
+  const startGame = useCallback(() => {
+    setIsPlaying(true);
+    setScore(0);
+  }, []);
+
+  const resetGame = useCallback(() => {
+    setIsPlaying(false);
+    setScore(0);
+  }, []);
+
   return {
     score,
+    highScore,
+    isPlaying,
+    coins,
+    isUpdating,
     updateScore,
     resetScore,
-    isUpdating
+    startGame,
+    resetGame
   };
 };
