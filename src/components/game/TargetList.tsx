@@ -1,32 +1,28 @@
-import React from "react";
-import { Target } from "@/components/Target";
-import { useGameLogic } from "@/hooks/useGameLogic";
+import React from 'react';
+import Target from '@/components/Target';
+import { TargetType } from '@/types/game';
 
 interface TargetListProps {
-  targets: Array<{
-    id: string;
-    position: { x: number; y: number };
-    isActive: boolean;
-  }>;
-  onTargetClick: (id: string) => void;
+  targets: TargetType[];
+  onTargetClick: (targetId: number) => void;
 }
 
-const TargetList: React.FC<TargetListProps> = ({ targets, onTargetClick }) => {
-  const { isUpdating } = useGameLogic();
-
+const TargetList: React.FC<TargetListProps> = React.memo(({ targets, onTargetClick }) => {
   return (
-    <div className="relative w-full h-full">
-      {targets.map((target) => (
+    <>
+      {targets.map(target => (
         <Target
           key={target.id}
           position={target.position}
-          isActive={target.isActive}
-          isUpdating={isUpdating}
-          onClick={() => !isUpdating && onTargetClick(target.id)}
+          isHit={target.isHit}
+          onClick={() => onTargetClick(target.id)}
+          size={target.isMain ? 'large' : 'small'}
         />
       ))}
-    </div>
+    </>
   );
-};
+});
+
+TargetList.displayName = 'TargetList';
 
 export default TargetList;

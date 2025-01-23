@@ -1,40 +1,34 @@
-import React from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Target } from "lucide-react";
+import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface TargetProps {
   position: { x: number; y: number };
   onClick: () => void;
-  isActive?: boolean;
-  isUpdating?: boolean;
+  isHit: boolean;
+  size?: 'large' | 'small';
 }
 
-export const Target: React.FC<TargetProps> = ({
-  position,
-  onClick,
-  isActive = true,
-  isUpdating = false,
-}) => {
+const Target: React.FC<TargetProps> = React.memo(({ position, onClick, isHit, size = 'small' }) => {
   return (
-    <Button
+    <div
       className={cn(
-        "absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full p-2 transition-all duration-200",
-        isActive ? "opacity-100 scale-100" : "opacity-0 scale-0",
-        isUpdating ? "animate-pulse cursor-not-allowed" : "hover:scale-110",
-        "bg-game-accent hover:bg-game-accent/80 text-white"
+        'target absolute rounded-full overflow-hidden shadow-lg transition-all duration-700 ease-in-out transform -translate-x-1/2 -translate-y-1/2',
+        size === 'large' ? 'w-32 h-32' : 'w-8 h-8 md:w-6 md:h-6',
+        isHit && 'target-hit scale-0 opacity-0'
       )}
       style={{
         left: `${position.x}%`,
         top: `${position.y}%`,
+        backgroundImage: 'url(/lovable-uploads/7db07855-ed96-42bd-a8c5-182360b878c6.png)',
+        backgroundSize: 'contain',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
       }}
       onClick={onClick}
-      disabled={!isActive || isUpdating}
-    >
-      <Target className={cn(
-        "w-6 h-6",
-        isUpdating && "animate-spin"
-      )} />
-    </Button>
+    />
   );
-};
+});
+
+Target.displayName = 'Target';
+
+export default Target;

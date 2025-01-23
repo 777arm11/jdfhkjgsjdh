@@ -3,7 +3,6 @@ import CountdownTimer from '@/components/game/CountdownTimer';
 import TargetList from '@/components/game/TargetList';
 import { useTargetManagement } from '@/hooks/useTargetManagement';
 import { useGameCountdown } from '@/hooks/useGameCountdown';
-import { TargetType } from '@/types/game';
 
 interface GameAreaProps {
   isPlaying: boolean;
@@ -27,18 +26,12 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
     }
   }, [isPlaying, setTargets]);
 
-  const mappedTargets = targets.map(target => ({
-    id: String(target.id),
-    position: target.position,
-    isActive: !target.isHit
-  }));
-
   return (
     <div className="relative w-full h-[calc(100vh-20rem)] bg-gray-50/50 rounded-lg">
       <CountdownTimer countdown={countdown} />
       <TargetList 
-        targets={mappedTargets}
-        onTargetClick={(id) => handleTargetClick(Number(id))}
+        targets={targets} 
+        onTargetClick={handleTargetClick} 
       />
     </div>
   );
