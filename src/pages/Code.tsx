@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 import { FileCode2, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
 
 const Code = () => {
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { totalCoins } = useGlobalCoins();
 
   const handleRedeemCode = async () => {
     if (!code.trim()) {
@@ -37,26 +35,26 @@ const Code = () => {
         return;
       }
 
-      if (totalCoins < 100) {
+      // Call the redeem_creator_code function
+      const { data, error } = await supabase.rpc('redeem_creator_code', {
+        user_telegram_id: telegramId,
+        creator_code: code.toUpperCase()
+      });
+
+      if (error) throw error;
+
+      if (data === 0) {
         toast({
-          title: "Global Pool Depleted",
-          description: "The global coin pool has been depleted!",
+          title: "Invalid Code",
+          description: "This code is invalid or has been deactivated",
           variant: "destructive",
         });
         return;
       }
 
-      // Verify and process the code
-      const { error } = await supabase.rpc('increment_coins', {
-        user_telegram_id: telegramId,
-        increment_amount: 100
-      });
-
-      if (error) throw error;
-
       toast({
         title: "Success!",
-        description: "You've received 100 coins from the code!",
+        description: `You've received ${data} coins from the code!`,
       });
       
       setCode("");

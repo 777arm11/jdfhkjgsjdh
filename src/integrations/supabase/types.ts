@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      creator_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          points: number
+          times_used: number | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          points: number
+          times_used?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          points?: number
+          times_used?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       players: {
         Row: {
           coins: number | null
@@ -50,6 +80,13 @@ export type Database = {
           increment_amount: number
         }
         Returns: undefined
+      }
+      redeem_creator_code: {
+        Args: {
+          user_telegram_id: string
+          creator_code: string
+        }
+        Returns: number
       }
     }
     Enums: {
