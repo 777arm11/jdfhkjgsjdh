@@ -42,13 +42,15 @@ export const useGameLogic = () => {
       return data;
     },
     retry: false,
-    onError: (error) => {
-      console.error('Error fetching player data:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to load player data",
-        variant: "destructive",
-      });
+    meta: {
+      onError: (error: Error) => {
+        console.error('Error fetching player data:', error);
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to load player data",
+          variant: "destructive",
+        });
+      }
     }
   });
 
