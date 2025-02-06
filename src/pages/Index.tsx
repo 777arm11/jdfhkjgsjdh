@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import GameLayout from '@/components/GameLayout';
@@ -10,7 +11,8 @@ const Index = () => {
     coins,
     startGame,
     resetGame,
-    updateScore
+    updateScore,
+    telegramValidated
   } = useGameLogic();
 
   return (
@@ -22,6 +24,7 @@ const Index = () => {
       onScoreUpdate={updateScore}
       onStart={startGame}
       onReset={resetGame}
+      telegramValidated={telegramValidated}
     />
   );
 };
