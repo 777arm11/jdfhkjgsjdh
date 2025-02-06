@@ -19,9 +19,10 @@ export const useGameLogic = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const telegramId = urlParams.get('id');
     if (!telegramId) {
-      console.log('No telegram ID found in URL');
+      console.log('Debug: No telegram ID found in URL. Current URL:', window.location.href);
       return null;
     }
+    console.log('Debug: Telegram ID found:', telegramId);
     return telegramId;
   };
 
@@ -32,25 +33,32 @@ export const useGameLogic = () => {
       const telegramId = getTelegramId();
       
       if (!telegramId) {
+        console.log('Debug: Query canceled due to missing telegram ID');
         throw new Error(TELEGRAM_ERROR_MESSAGE);
       }
 
+      console.log('Debug: Fetching player data for telegram ID:', telegramId);
       const { data, error } = await supabase
         .from('players')
         .select('coins, username')
         .eq('telegram_id', telegramId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Debug: Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Debug: Player data fetched successfully:', data);
       setTelegramValidated(true);
       return data;
     },
     retry: false,
     meta: {
       onError: (error: Error) => {
-        console.error('Error fetching player data:', error);
+        console.error('Debug: Error in player data query:', error);
         toast({
-          title: "Error",
+          title: "Game Access Error",
           description: error instanceof Error ? error.message : "Failed to load player data",
           variant: "destructive",
         });
@@ -60,31 +68,35 @@ export const useGameLogic = () => {
   });
 
   useEffect(() => {
-    // Only store high score in localStorage if telegram is validated
     if (telegramValidated) {
+      console.log('Debug: Loading high score from localStorage');
       const savedHighScore = localStorage.getItem('tappingGameHighScore');
       if (savedHighScore) {
         setHighScore(parseInt(savedHighScore));
+        console.log('Debug: Loaded high score:', savedHighScore);
       }
     }
 
-    // Initialize Telegram Game Proxy
     if (window.TelegramGameProxy) {
-      console.log('Telegram Game Proxy initialized');
+      console.log('Debug: Telegram Game Proxy initialized successfully');
+    } else {
+      console.log('Debug: Telegram Game Proxy not found');
     }
   }, [telegramValidated]);
 
   const startGame = () => {
     const telegramId = getTelegramId();
     if (!telegramId || !telegramValidated) {
+      console.log('Debug: Game start prevented - Not validated through Telegram');
       toast({
-        title: "Error",
+        title: "Access Required",
         description: TELEGRAM_ERROR_MESSAGE,
         variant: "destructive",
       });
       return;
     }
     
+    console.log('Debug: Starting game with telegram ID:', telegramId);
     setIsPlaying(true);
     setScore(0);
     toast({
@@ -95,13 +107,15 @@ export const useGameLogic = () => {
 
   const resetGame = () => {
     if (!telegramValidated) {
+      console.log('Debug: Game reset prevented - Not validated through Telegram');
       toast({
-        title: "Error",
+        title: "Access Required",
         description: TELEGRAM_ERROR_MESSAGE,
         variant: "destructive",
       });
       return;
     }
+    console.log('Debug: Resetting game');
     setIsPlaying(false);
     setScore(0);
   };
@@ -110,16 +124,17 @@ export const useGameLogic = () => {
     try {
       const telegramId = getTelegramId();
       if (!telegramId || !telegramValidated) {
+        console.log('Debug: Score update prevented - Not validated through Telegram');
         toast({
-          title: "Error",
+          title: "Access Required",
           description: TELEGRAM_ERROR_MESSAGE,
           variant: "destructive",
         });
         return;
       }
 
+      console.log('Debug: Updating score:', newScore, 'Adding coins:', COINS_PER_HIT);
       setScore(newScore);
-      console.log('Updating score:', newScore, 'Adding coins:', COINS_PER_HIT);
 
       // Update coins in database
       const { error: incrementError } = await supabase.rpc('increment_coins', {
@@ -128,7 +143,7 @@ export const useGameLogic = () => {
       });
 
       if (incrementError) {
-        console.error('Error incrementing coins:', incrementError);
+        console.error('Debug: Error incrementing coins:', incrementError);
         toast({
           title: "Error",
           description: "Failed to update coins. Please try again.",
@@ -137,7 +152,10 @@ export const useGameLogic = () => {
         return;
       }
 
+      console.log('Debug: Coins updated successfully');
+
       if (newScore > highScore) {
+        console.log('Debug: New high score achieved:', newScore);
         setHighScore(newScore);
         localStorage.setItem('tappingGameHighScore', newScore.toString());
         
@@ -145,14 +163,14 @@ export const useGameLogic = () => {
         if (window.TelegramGameProxy?.setScore) {
           try {
             window.TelegramGameProxy.setScore(newScore);
-            console.log('Score updated in Telegram:', newScore);
+            console.log('Debug: Score updated in Telegram:', newScore);
           } catch (error) {
-            console.error('Error updating Telegram score:', error);
+            console.error('Debug: Error updating Telegram score:', error);
           }
         }
       }
     } catch (error) {
-      console.error('Error updating score:', error);
+      console.error('Debug: Error in updateScore:', error);
       toast({
         title: "Error",
         description: "Failed to update score. Please try again.",
