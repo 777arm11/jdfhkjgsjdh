@@ -1,5 +1,5 @@
 interface TelegramUser {
-  id: number;
+  id:6076880083;
   first_name: string;
   last_name?: string;
   username?: string;
