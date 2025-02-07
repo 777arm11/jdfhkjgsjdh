@@ -27,7 +27,10 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   onReset,
   telegramValidated = false
 }) => {
-  if (!telegramValidated) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const telegramId = urlParams.get('id');
+  
+  if (!telegramValidated && !telegramId) {
     return (
       <div className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-game-primary flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-game-secondary border-game-accent">
@@ -35,13 +38,21 @@ const GameLayout: React.FC<GameLayoutProps> = ({
             <div className="flex items-center justify-center space-x-2">
               <AlertTriangle className="w-8 h-8 text-yellow-500" />
               <CardTitle className="text-2xl font-pixel text-white text-center">
-                Access Required
+                Test Mode
               </CardTitle>
             </div>
             <CardDescription className="text-center text-base font-pixel text-white/80">
-              Please open this game through Telegram to play and earn coins!
+              You're playing in test mode. Progress and coins won't be saved.
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full mt-4 px-4 py-2 bg-game-accent text-white rounded-md font-pixel hover:bg-game-accent/80 transition-colors"
+            >
+              Start Playing
+            </button>
+          </CardContent>
         </Card>
       </div>
     );
