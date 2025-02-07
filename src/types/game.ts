@@ -1,5 +1,6 @@
+
 export interface TargetType {
-  id:6076880083;
+  id: number;
   position: {
     x: number;
     y: number;
