@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import GameArea from '@/components/GameArea';
 import ScoreBoard from '@/components/ScoreBoard';
 import GameControls from '@/components/GameControls';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface GameLayoutProps {
   score: number;
@@ -27,10 +28,28 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   onReset,
   telegramValidated = false
 }) => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const telegramId = urlParams.get('id');
-  
-  if (!telegramValidated && !telegramId) {
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Initialize Telegram WebApp
+    if (window.Telegram?.WebApp) {
+      const webApp = window.Telegram.WebApp;
+      
+      // Tell Telegram WebApp we're ready
+      webApp.ready();
+      
+      // Expand to full screen
+      webApp.expand();
+
+      // Apply Telegram theme colors
+      document.documentElement.style.setProperty('--game-primary', webApp.themeParams.bg_color);
+      document.documentElement.style.setProperty('--game-text', webApp.themeParams.text_color);
+      document.documentElement.style.setProperty('--game-accent', webApp.themeParams.button_color);
+    }
+  }, []);
+
+  // Display test mode warning if not in Telegram
+  if (!telegramValidated && !window.Telegram?.WebApp) {
     return (
       <div className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-game-primary flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-game-secondary border-game-accent">
@@ -42,7 +61,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
               </CardTitle>
             </div>
             <CardDescription className="text-center text-base font-pixel text-white/80">
-              You're playing in test mode. Progress and coins won't be saved.
+              Open this game in Telegram to play with full features.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -50,7 +69,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
               onClick={() => window.location.reload()}
               className="w-full mt-4 px-4 py-2 bg-game-accent text-white rounded-md font-pixel hover:bg-game-accent/80 transition-colors"
             >
-              Start Playing
+              Start Test Mode
             </button>
           </CardContent>
         </Card>

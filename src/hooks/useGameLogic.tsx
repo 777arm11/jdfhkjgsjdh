@@ -14,35 +14,40 @@ export const useGameLogic = () => {
   const [telegramValidated, setTelegramValidated] = useState(false);
   const { toast } = useToast();
 
-  // Get telegram ID from URL
-  const getTelegramId = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const telegramId = urlParams.get('id');
-    if (!telegramId) {
-      console.log('Debug: No telegram ID found in URL. Running in test mode');
+  // Get telegram user from WebApp data
+  const getTelegramUser = () => {
+    if (!window.Telegram?.WebApp) {
+      console.log('Debug: No Telegram WebApp found. Running in test mode');
       return null;
     }
-    console.log('Debug: Telegram ID found:', telegramId);
-    return telegramId;
+
+    const user = window.Telegram.WebApp.initDataUnsafe.user;
+    if (!user) {
+      console.log('Debug: No user data in WebApp. Running in test mode');
+      return null;
+    }
+
+    console.log('Debug: Telegram user found:', user);
+    return user;
   };
 
   // Fetch player data including coins from database
   const { data: playerData, error: playerError } = useQuery({
     queryKey: ['player'],
     queryFn: async () => {
-      const telegramId = getTelegramId();
+      const user = getTelegramUser();
       
-      if (!telegramId) {
+      if (!user) {
         console.log('Debug: Running in test mode');
         setTelegramValidated(true); // Allow play without Telegram
         return { coins: 0 };
       }
 
-      console.log('Debug: Fetching player data for telegram ID:', telegramId);
+      console.log('Debug: Fetching player data for telegram ID:', user.id);
       const { data, error } = await supabase
         .from('players')
         .select('coins, username')
-        .eq('telegram_id', telegramId)
+        .eq('telegram_id', user.id.toString())
         .single();
 
       if (error) {
@@ -77,16 +82,24 @@ export const useGameLogic = () => {
       }
     }
 
-    if (window.TelegramGameProxy) {
-      console.log('Debug: Telegram Game Proxy initialized successfully');
-    } else {
-      console.log('Debug: Telegram Game Proxy not found - running in test mode');
+    // Setup Telegram WebApp if available
+    if (window.Telegram?.WebApp) {
+      const webApp = window.Telegram.WebApp;
+      
+      // Configure back button
+      webApp.BackButton.onClick(() => {
+        if (isPlaying) {
+          resetGame();
+        } else {
+          webApp.close();
+        }
+      });
     }
   }, [telegramValidated]);
 
   const startGame = () => {
-    const telegramId = getTelegramId();
-    if (!telegramId) {
+    const user = getTelegramUser();
+    if (!user) {
       console.log('Debug: Starting game in test mode');
       toast({
         title: "Test Mode Active",
@@ -100,25 +113,35 @@ export const useGameLogic = () => {
       title: "Game Started!",
       description: "Click the circles as fast as you can!",
     });
+
+    // Show back button in Telegram WebApp
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.BackButton.show();
+    }
   };
 
   const resetGame = () => {
     console.log('Debug: Resetting game');
     setIsPlaying(false);
     setScore(0);
+
+    // Hide back button in Telegram WebApp
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.BackButton.hide();
+    }
   };
 
   const updateScore = async (newScore: number) => {
     try {
-      const telegramId = getTelegramId();
+      const user = getTelegramUser();
       setScore(newScore);
 
-      if (telegramId) {
+      if (user) {
         console.log('Debug: Updating score:', newScore, 'Adding coins:', COINS_PER_HIT);
 
-        // Update coins in database only if we have a Telegram ID
+        // Update coins in database
         const { error: incrementError } = await supabase.rpc('increment_coins', {
-          user_telegram_id: telegramId,
+          user_telegram_id: user.id.toString(),
           increment_amount: COINS_PER_HIT
         });
 
@@ -140,7 +163,7 @@ export const useGameLogic = () => {
         setHighScore(newScore);
         localStorage.setItem('tappingGameHighScore', newScore.toString());
         
-        // Update Telegram score only if we're in Telegram
+        // Update Telegram score
         if (window.TelegramGameProxy?.setScore) {
           try {
             window.TelegramGameProxy.setScore(newScore);
