@@ -120,8 +120,8 @@ export const useGameLogic = () => {
     }
   }, [telegramValidated]);
 
-  const startGame = () => {
-    const user = getTelegramUser();
+  const startGame = async () => {
+    const user = await getTelegramUser();
     if (!user) {
       console.log('Debug: Starting game in test mode');
       toast({
@@ -156,7 +156,7 @@ export const useGameLogic = () => {
 
   const updateScore = async (newScore: number) => {
     try {
-      const user = getTelegramUser();
+      const user = await getTelegramUser();
       setScore(newScore);
 
       if (user) {
