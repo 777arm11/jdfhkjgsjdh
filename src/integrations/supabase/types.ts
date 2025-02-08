@@ -69,30 +69,6 @@ export type Database = {
         }
         Relationships: []
       }
-      telegram_bot_config: {
-        Row: {
-          bot_name: string
-          bot_username: string
-          created_at: string
-          id: number
-          updated_at: string
-        }
-        Insert: {
-          bot_name: string
-          bot_username: string
-          created_at?: string
-          id?: number
-          updated_at?: string
-        }
-        Update: {
-          bot_name?: string
-          bot_username?: string
-          created_at?: string
-          id?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -112,12 +88,17 @@ export type Database = {
         }
         Returns: number
       }
-      validate_telegram_init_data: {
-        Args: {
-          init_data: string
-        }
-        Returns: boolean
-      }
+      validate_telegram_init_data:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: undefined
+          }
+        | {
+            Args: {
+              init_data: string
+            }
+            Returns: boolean
+          }
     }
     Enums: {
       [_ in never]: never
