@@ -99,6 +99,13 @@ export type Database = {
             }
             Returns: boolean
           }
+        | {
+            Args: {
+              init_data: string
+              bot_token: string
+            }
+            Returns: boolean
+          }
     }
     Enums: {
       [_ in never]: never

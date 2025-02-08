@@ -14,28 +14,51 @@ export const useGameLogic = () => {
   const [telegramValidated, setTelegramValidated] = useState(false);
   const { toast } = useToast();
 
-  // Get telegram user from WebApp data
-  const getTelegramUser = () => {
+  // Get telegram user and validate init data
+  const getTelegramUser = async () => {
     if (!window.Telegram?.WebApp) {
       console.log('Debug: No Telegram WebApp found. Running in test mode');
       return null;
     }
 
-    const user = window.Telegram.WebApp.initDataUnsafe.user;
+    const webApp = window.Telegram.WebApp;
+    const initData = webApp.initData;
+    const user = webApp.initDataUnsafe.user;
+
     if (!user) {
       console.log('Debug: No user data in WebApp. Running in test mode');
       return null;
     }
 
-    console.log('Debug: Telegram user found:', user);
-    return user;
+    if (!initData) {
+      console.log('Debug: No init data found. Running in test mode');
+      return null;
+    }
+
+    try {
+      console.log('Debug: Validating Telegram init data');
+      const response = await supabase.functions.invoke('validate-telegram', {
+        body: { initData }
+      });
+
+      if (!response.data?.isValid) {
+        console.error('Debug: Invalid Telegram init data');
+        return null;
+      }
+
+      console.log('Debug: Telegram user validated:', user);
+      return user;
+    } catch (error) {
+      console.error('Debug: Error validating Telegram data:', error);
+      return null;
+    }
   };
 
   // Fetch player data including coins from database
   const { data: playerData, error: playerError } = useQuery({
     queryKey: ['player'],
     queryFn: async () => {
-      const user = getTelegramUser();
+      const user = await getTelegramUser();
       
       if (!user) {
         console.log('Debug: Running in test mode');
