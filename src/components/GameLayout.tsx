@@ -34,22 +34,28 @@ const GameLayout: React.FC<GameLayoutProps> = ({
     // Initialize Telegram WebApp
     if (window.Telegram?.WebApp) {
       const webApp = window.Telegram.WebApp;
+      console.log('Debug: Initializing Telegram WebApp');
       
       // Tell Telegram WebApp we're ready
       webApp.ready();
+      console.log('Debug: WebApp ready called');
       
       // Expand to full screen
       webApp.expand();
+      console.log('Debug: WebApp expanded');
 
       // Apply Telegram theme colors
       document.documentElement.style.setProperty('--game-primary', webApp.themeParams.bg_color);
       document.documentElement.style.setProperty('--game-text', webApp.themeParams.text_color);
       document.documentElement.style.setProperty('--game-accent', webApp.themeParams.button_color);
+    } else {
+      console.log('Debug: Telegram WebApp not found in window object');
     }
   }, []);
 
   // Display test mode warning if not in Telegram
   if (!telegramValidated && !window.Telegram?.WebApp) {
+    console.log('Debug: Showing test mode UI. telegramValidated:', telegramValidated, 'window.Telegram:', window.Telegram);
     return (
       <div className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-game-primary flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-game-secondary border-game-accent">
@@ -62,6 +68,15 @@ const GameLayout: React.FC<GameLayoutProps> = ({
             </div>
             <CardDescription className="text-center text-base font-pixel text-white/80">
               Open this game in Telegram to play with full features.
+              <div className="mt-2 text-sm opacity-70">
+                Debug Info:
+                <br />
+                Telegram Object: {window.Telegram ? 'Present' : 'Missing'}
+                <br />
+                WebApp Object: {window.Telegram?.WebApp ? 'Present' : 'Missing'}
+                <br />
+                Validation: {telegramValidated ? 'Passed' : 'Failed'}
+              </div>
             </CardDescription>
           </CardHeader>
           <CardContent>
