@@ -11,6 +11,8 @@ export const useTelegramValidation = () => {
 
     const webApp = window.Telegram.WebApp;
     console.log('Debug: WebApp object:', webApp);
+    console.log('Debug: WebApp version:', webApp.version);
+    console.log('Debug: Platform:', webApp.platform);
     
     const initData = webApp.initData;
     console.log('Debug: Init data:', initData);
@@ -37,7 +39,7 @@ export const useTelegramValidation = () => {
       console.log('Debug: Validation response:', response);
 
       if (!response.data?.isValid) {
-        console.error('Debug: Invalid Telegram init data');
+        console.error('Debug: Invalid Telegram init data:', response.error);
         return null;
       }
 
