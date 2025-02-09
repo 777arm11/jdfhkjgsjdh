@@ -24,6 +24,8 @@ interface ThemeParams {
 interface WebApp {
   initDataUnsafe: WebAppInitData;
   initData: string;
+  version: string;
+  platform: string;
   MainButton: {
     show: () => void;
     hide: () => void;
