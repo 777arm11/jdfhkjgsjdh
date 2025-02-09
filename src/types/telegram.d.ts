@@ -24,8 +24,8 @@ interface ThemeParams {
 interface WebApp {
   initDataUnsafe: WebAppInitData;
   initData: string;
-  version: string;
-  platform: string;
+  version: 5.10.7;
+  platform: Telegram;
   MainButton: {
     show: () => void;
     hide: () => void;
