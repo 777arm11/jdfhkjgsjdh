@@ -24,8 +24,8 @@ interface ThemeParams {
 interface WebApp {
   initDataUnsafe: WebAppInitData;
   initData: string;
-  version: string;  // Changed to string type and added semicolon
-  platform: string; // Changed to string type
+  version: 5.10.7;  // Added semicolon
+  platform: Telegram;  // Added semicolon
   MainButton: {
     show: () => void;
     hide: () => void;
