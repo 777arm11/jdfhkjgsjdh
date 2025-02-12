@@ -11,8 +11,7 @@ const Index = () => {
     coins,
     startGame,
     resetGame,
-    updateScore,
-    telegramValidated
+    updateScore
   } = useGameLogic();
 
   return (
@@ -24,7 +23,6 @@ const Index = () => {
       onScoreUpdate={updateScore}
       onStart={startGame}
       onReset={resetGame}
-      telegramValidated={telegramValidated}
     />
   );
 };
