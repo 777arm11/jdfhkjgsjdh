@@ -18,6 +18,23 @@ export const useGameScore = () => {
         console.log('Debug: New high score achieved:', newScore);
         setHighScore(newScore);
         localStorage.setItem('tappingGameHighScore', newScore.toString());
+
+        // Get telegram ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const telegramId = urlParams.get('id');
+
+        if (telegramId) {
+          console.log('Debug: Incrementing coins for telegram ID:', telegramId);
+          const { error } = await supabase.rpc('increment_coins', {
+            user_telegram_id: telegramId,
+            increment_amount: COINS_PER_HIT
+          });
+
+          if (error) {
+            console.error('Debug: Error incrementing coins:', error);
+            throw error;
+          }
+        }
       }
     } catch (error) {
       console.error('Debug: Error in updateScore:', error);
