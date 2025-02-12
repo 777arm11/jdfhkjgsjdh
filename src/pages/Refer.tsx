@@ -1,76 +1,41 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Link2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Refer = () => {
   const { toast } = useToast();
-  const [telegramId, setTelegramId] = useState<string | null>(null);
   const [walletAddress, setWalletAddress] = useState("");
   const [referralCode, setReferralCode] = useState("");
 
-  useEffect(() => {
-    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    if (tgUser?.id) {
-      setTelegramId(tgUser.id.toString());
-      setReferralCode(tgUser.id.toString());
-    }
-  }, []);
-
   const handleCopyReferralLink = async () => {
-    if (!telegramId) {
-      toast({
-        title: "Error",
-        description: "Please open this app in Telegram",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
-      // Create a proper referral link with the base URL and referral code
-      const referralLink = `https://t.me/YourBotUsername?start=ref_${referralCode}`;
+      const referralLink = `https://game.example.com?ref=${referralCode}`;
       await navigator.clipboard.writeText(referralLink);
       
-      // Increment coins for sharing the referral link
-      const { error: incrementError } = await supabase.rpc('increment_coins', {
-        user_telegram_id: telegramId,
-        increment_amount: 100
-      });
-
-      if (incrementError) throw incrementError;
-
       toast({
         title: "Success!",
-        description: "Referral link copied to clipboard and you earned 100 coins!",
+        description: "Referral link copied to clipboard!",
       });
     } catch (err) {
       console.error('Error handling referral:', err);
       toast({
         title: "Error",
-        description: "Failed to process referral link",
+        description: "Failed to copy referral link",
         variant: "destructive",
       });
     }
   };
 
   const handleSaveWallet = async () => {
-    if (!telegramId) {
-      toast({
-        title: "Error",
-        description: "Please open this app in Telegram",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const { error } = await supabase
         .from('players')
         .update({ wallet_address: walletAddress })
-        .eq('telegram_id', telegramId);
+        .single();
 
       if (error) throw error;
 
@@ -96,18 +61,23 @@ const Refer = () => {
         <div className="bg-game-secondary rounded-lg shadow-md p-6 border border-game-accent">
           <h2 className="text-xl font-pixel text-white mb-4">Share Your Referral Link</h2>
           <p className="text-white/80 font-pixel text-sm mb-6">
-            Invite your friends to join and earn rewards! You'll receive 100 coins for each friend who joins using your referral link.
+            Invite your friends to join and earn rewards! You'll receive rewards for each friend who joins using your referral link.
           </p>
           
           <div className="bg-game-accent p-4 rounded-lg mb-6">
             <p className="text-sm font-pixel text-white">Your Referral Code</p>
-            <p className="text-lg font-pixel text-white mt-1">{referralCode || "Loading..."}</p>
+            <Input
+              type="text"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              placeholder="Enter your referral code"
+              className="bg-game-accent border-game-accent text-white font-pixel mt-2"
+            />
           </div>
           
           <Button 
             onClick={handleCopyReferralLink}
             className="w-full flex items-center justify-center gap-2 bg-game-accent hover:bg-game-accent/80 text-white font-pixel"
-            disabled={!telegramId}
           >
             <Link2 className="h-5 w-5" />
             Copy Referral Link
@@ -132,7 +102,6 @@ const Refer = () => {
             <Button 
               onClick={handleSaveWallet}
               className="w-full bg-game-accent hover:bg-game-accent/80 text-white font-pixel"
-              disabled={!telegramId}
             >
               Save Wallet Address
             </Button>
