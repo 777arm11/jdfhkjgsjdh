@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { handleCoinIncrement } from '@/utils/coinUtils';
 
@@ -9,6 +9,14 @@ export const useGameScore = () => {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const { toast } = useToast();
+
+  // Load high score from localStorage on component mount
+  useEffect(() => {
+    const savedHighScore = localStorage.getItem('tappingGameHighScore');
+    if (savedHighScore) {
+      setHighScore(parseInt(savedHighScore, 10));
+    }
+  }, []);
 
   const updateScore = async (newScore: number) => {
     try {
@@ -25,6 +33,7 @@ export const useGameScore = () => {
         toast({
           title: "New High Score!",
           description: `You earned ${COINS_PER_HIT} coins!`,
+          duration: 3000,
         });
       }
     } catch (error) {
@@ -33,6 +42,7 @@ export const useGameScore = () => {
         title: "Error",
         description: "Failed to update score. Please try again.",
         variant: "destructive",
+        duration: 3000,
       });
     }
   };
