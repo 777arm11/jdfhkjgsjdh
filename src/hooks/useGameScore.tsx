@@ -21,6 +21,11 @@ export const useGameScore = () => {
 
         console.log('Debug: Incrementing coins for high score');
         await handleCoinIncrement(COINS_PER_HIT);
+        
+        toast({
+          title: "New High Score!",
+          description: `You earned ${COINS_PER_HIT} coins!`,
+        });
       }
     } catch (error) {
       console.error('Debug: Error in updateScore:', error);
