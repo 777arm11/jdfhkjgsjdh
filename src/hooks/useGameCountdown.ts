@@ -1,43 +1,36 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 export const useGameCountdown = (isPlaying: boolean, onCountdownComplete: () => void) => {
   const [countdown, setCountdown] = useState<number | null>(null);
 
-  const startCountdown = useCallback(() => {
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+
     if (isPlaying) {
       setCountdown(3);
-    }
-  }, [isPlaying]);
-
-  useEffect(() => {
-    if (isPlaying) {
-      startCountdown();
+      
+      timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === null || prev <= 1) {
+            if (timer) clearInterval(timer);
+            if (prev === 1) {
+              onCountdownComplete();
+            }
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } else {
       setCountdown(null);
+      if (timer) clearInterval(timer);
     }
-  }, [isPlaying, startCountdown]);
-
-  useEffect(() => {
-    if (countdown === null || !isPlaying) return;
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(timer);
-          if (prev === 1) {
-            onCountdownComplete();
-          }
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
 
     return () => {
-      clearInterval(timer);
+      if (timer) clearInterval(timer);
     };
-  }, [countdown, isPlaying, onCountdownComplete]);
+  }, [isPlaying, onCountdownComplete]);
 
   return countdown;
 };
