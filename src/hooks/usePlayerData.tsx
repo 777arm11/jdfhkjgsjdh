@@ -6,19 +6,24 @@ import { getBrowserId } from '@/utils/browserUtils';
 
 export const usePlayerData = () => {
   const { toast } = useToast();
+  const browserId = getBrowserId();
   
   const { data: playerData, error: playerError } = useQuery({
-    queryKey: ['player'],
+    queryKey: ['player', browserId],
     queryFn: async () => {
-      const browserId = getBrowserId();
-      console.log('Debug: Using browser ID:', browserId);
+      console.log('Debug: Fetching player data for browser ID:', browserId);
       
-      // First try to get existing player
-      let { data: player } = await supabase
+      // Try to get existing player
+      let { data: player, error } = await supabase
         .from('players')
-        .select('coins, browser_id')
+        .select('*')
         .eq('browser_id', browserId)
         .maybeSingle();
+
+      if (error) {
+        console.error('Debug: Error fetching player:', error);
+        throw error;
+      }
 
       // If player doesn't exist, create new player
       if (!player) {
@@ -45,7 +50,7 @@ export const usePlayerData = () => {
       console.log('Debug: Player data:', player);
       return player;
     },
-    retry: false,
+    retry: 1,
     meta: {
       onError: (error: Error) => {
         console.error('Debug: Error in player data query:', error);
