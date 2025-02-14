@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { TargetType } from '@/types/game';
 import { handleCoinIncrement } from '@/utils/coinUtils';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 const getRandomPosition = () => ({
   x: Math.random() * 80 + 10,
@@ -12,7 +12,6 @@ const getRandomPosition = () => ({
 export const useTargetManagement = (score: number, onScoreUpdate: (newScore: number) => void) => {
   const [targets, setTargets] = useState<TargetType[]>([]);
   const [mainTargetHit, setMainTargetHit] = useState(false);
-  const { toast } = useToast();
 
   const generateSmallTargets = useCallback(() => {
     const smallTargets: TargetType[] = [];
@@ -71,6 +70,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
       }
     } catch (error) {
       console.error('Debug: Error handling target click:', error);
+      // Use toast function directly instead of useToast hook
       toast({
         title: "Error",
         description: "Failed to update coins. Please try again.",
@@ -78,7 +78,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
         duration: 3000,
       });
     }
-  }, [score, onScoreUpdate, targets, mainTargetHit, generateSmallTargets, spawnMainTarget, toast]);
+  }, [score, onScoreUpdate, targets, mainTargetHit, generateSmallTargets, spawnMainTarget]);
 
   return {
     targets,
