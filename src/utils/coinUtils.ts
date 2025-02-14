@@ -1,10 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { getBrowserId } from "./browserUtils";
 
 export const handleCoinIncrement = async (amount: number) => {
-  const { toast } = useToast();
   const browserId = getBrowserId();
   
   console.log('Debug: Incrementing coins for browser ID:', browserId);
