@@ -41,28 +41,31 @@ export type Database = {
       }
       players: {
         Row: {
+          browser_id: string | null
           coins: number | null
           created_at: string
           id: string
-          telegram_id: string
+          telegram_id: string | null
           updated_at: string
           username: string | null
           wallet_address: string | null
         }
         Insert: {
+          browser_id?: string | null
           coins?: number | null
           created_at?: string
           id?: string
-          telegram_id: string
+          telegram_id?: string | null
           updated_at?: string
           username?: string | null
           wallet_address?: string | null
         }
         Update: {
+          browser_id?: string | null
           coins?: number | null
           created_at?: string
           id?: string
-          telegram_id?: string
+          telegram_id?: string | null
           updated_at?: string
           username?: string | null
           wallet_address?: string | null

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { handleCoinIncrement } from '@/utils/coinUtils';
 
 const COINS_PER_HIT = 1;
 
@@ -19,22 +19,8 @@ export const useGameScore = () => {
         setHighScore(newScore);
         localStorage.setItem('tappingGameHighScore', newScore.toString());
 
-        // Get telegram ID from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const telegramId = urlParams.get('id');
-
-        if (telegramId) {
-          console.log('Debug: Incrementing coins for telegram ID:', telegramId);
-          const { error } = await supabase.rpc('increment_coins', {
-            user_telegram_id: telegramId,
-            increment_amount: COINS_PER_HIT
-          });
-
-          if (error) {
-            console.error('Debug: Error incrementing coins:', error);
-            throw error;
-          }
-        }
+        console.log('Debug: Incrementing coins for high score');
+        await handleCoinIncrement(COINS_PER_HIT);
       }
     } catch (error) {
       console.error('Debug: Error in updateScore:', error);

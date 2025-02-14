@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getBrowserId } from '@/utils/browserUtils';
 
 export const usePlayerData = () => {
   const { toast } = useToast();
@@ -9,26 +10,14 @@ export const usePlayerData = () => {
   const { data: playerData, error: playerError } = useQuery({
     queryKey: ['player'],
     queryFn: async () => {
-      // Get telegram_id from URL params
-      const urlParams = new URLSearchParams(window.location.search);
-      const telegramId = urlParams.get('id');
-      
-      if (!telegramId) {
-        console.log('Debug: No telegram ID found in URL');
-        toast({
-          title: "Test Mode Active",
-          description: "Please open this app in Telegram.",
-        });
-        return { coins: 0 };
-      }
-
-      console.log('Debug: Fetching/creating player data for telegram ID:', telegramId);
+      const browserId = getBrowserId();
+      console.log('Debug: Using browser ID:', browserId);
       
       // First try to get existing player
       let { data: player } = await supabase
         .from('players')
-        .select('coins, telegram_id, username')
-        .eq('telegram_id', telegramId)
+        .select('coins, browser_id')
+        .eq('browser_id', browserId)
         .maybeSingle();
 
       // If player doesn't exist, create new player
@@ -38,9 +27,8 @@ export const usePlayerData = () => {
           .from('players')
           .insert([
             { 
-              telegram_id: telegramId,
-              coins: 0,
-              username: null
+              browser_id: browserId,
+              coins: 0
             }
           ])
           .select()
