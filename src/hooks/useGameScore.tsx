@@ -1,9 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { handleCoinIncrement } from '@/utils/coinUtils';
-
-const COINS_PER_HIT = 1;
 
 export const useGameScore = () => {
   const [score, setScore] = useState(0);
@@ -26,15 +23,6 @@ export const useGameScore = () => {
         console.log('Debug: New high score achieved:', newScore);
         setHighScore(newScore);
         localStorage.setItem('tappingGameHighScore', newScore.toString());
-
-        console.log('Debug: Incrementing coins for high score');
-        await handleCoinIncrement(COINS_PER_HIT);
-        
-        toast({
-          title: "New High Score!",
-          description: `You earned ${COINS_PER_HIT} coins!`,
-          duration: 3000,
-        });
       }
     } catch (error) {
       console.error('Debug: Error in updateScore:', error);
