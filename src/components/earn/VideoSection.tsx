@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
@@ -56,10 +57,7 @@ export const VideoSection = () => {
     }
 
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const telegramId = urlParams.get('id');
-      
-      await handleCoinIncrement(telegramId, 100);
+      await handleCoinIncrement(100);
 
       toast({
         title: "Success!",

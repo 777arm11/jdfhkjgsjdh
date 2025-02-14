@@ -1,3 +1,4 @@
+
 import { Youtube, Twitter, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useGlobalCoins } from "@/contexts/GlobalCoinsContext";
@@ -33,11 +34,8 @@ export const SocialMediaSection = () => {
     }
 
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const telegramId = urlParams.get('id');
+      await handleCoinIncrement(50);
       
-      await handleCoinIncrement(telegramId, 50);
-
       const url = socialMediaLinks[platform as keyof typeof socialMediaLinks];
       window.open(url, '_blank');
       

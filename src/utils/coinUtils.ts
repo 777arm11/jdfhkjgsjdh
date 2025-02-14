@@ -9,9 +9,9 @@ export const handleCoinIncrement = async (amount: number) => {
   
   console.log('Debug: Incrementing coins for browser ID:', browserId);
   
-  const { error } = await supabase.rpc('increment_coins_browser', {
-    user_browser_id: browserId,
-    increment_amount: amount
+  const { error } = await supabase.rpc('increment_coins', {
+    increment_amount: amount,
+    user_telegram_id: browserId
   });
 
   if (error) {
