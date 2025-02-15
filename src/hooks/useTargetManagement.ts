@@ -12,6 +12,8 @@ const getRandomPosition = () => ({
 export const useTargetManagement = (score: number, onScoreUpdate: (newScore: number) => void) => {
   const [targets, setTargets] = useState<TargetType[]>([]);
   const [mainTargetHit, setMainTargetHit] = useState(false);
+  const [combo, setCombo] = useState(1);
+  const [lastHitTime, setLastHitTime] = useState(0);
 
   const generateSmallTargets = useCallback(() => {
     const smallTargets: TargetType[] = [];
@@ -37,12 +39,22 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
       isMain: true
     }]);
     setMainTargetHit(false);
+    setCombo(1);
   }, []);
 
   const handleTargetClick = useCallback(async (targetId: number) => {
     const target = targets.find(t => t.id === targetId);
+    const currentTime = Date.now();
     
     if (!target || target.isHit) return;
+
+    // Update combo based on time between hits
+    if (currentTime - lastHitTime < 1000) {
+      setCombo(prev => Math.min(prev + 1, 5));
+    } else {
+      setCombo(1);
+    }
+    setLastHitTime(currentTime);
 
     try {
       if (target.isMain && !mainTargetHit) {
@@ -51,16 +63,16 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
           ...prev.map(t => t.id === targetId ? { ...t, isHit: true } : t),
           ...generateSmallTargets()
         ]);
-        onScoreUpdate(score + 2);
-        await handleCoinIncrement(1);
+        onScoreUpdate(score + (2 * combo));
+        await handleCoinIncrement(combo);
       } else if (!target.isMain) {
         setTargets(prev =>
           prev.map(t =>
             t.id === targetId ? { ...t, isHit: true } : t
           ).filter(t => !t.isHit || t.id !== targetId)
         );
-        onScoreUpdate(score + 1);
-        await handleCoinIncrement(1);
+        onScoreUpdate(score + (1 * combo));
+        await handleCoinIncrement(combo);
       }
 
       const remainingTargets = targets.filter(t => !t.isHit && !t.isMain).length;
@@ -70,7 +82,6 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
       }
     } catch (error) {
       console.error('Debug: Error handling target click:', error);
-      // Use toast function directly instead of useToast hook
       toast({
         title: "Error",
         description: "Failed to update coins. Please try again.",
@@ -78,7 +89,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
         duration: 3000,
       });
     }
-  }, [score, onScoreUpdate, targets, mainTargetHit, generateSmallTargets, spawnMainTarget]);
+  }, [score, onScoreUpdate, targets, mainTargetHit, generateSmallTargets, spawnMainTarget, combo]);
 
   return {
     targets,
@@ -86,6 +97,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
     mainTargetHit,
     setMainTargetHit,
     handleTargetClick,
-    spawnMainTarget
+    spawnMainTarget,
+    combo
   };
 };

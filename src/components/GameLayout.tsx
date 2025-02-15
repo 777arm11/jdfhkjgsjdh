@@ -24,8 +24,8 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   onReset,
 }) => {
   return (
-    <div className="relative w-full min-h-[calc(100vh-4rem)] overflow-hidden bg-game-primary">
-      <div className="max-w-xl mx-auto h-full px-4 py-6 flex flex-col gap-6">
+    <div className="relative w-full min-h-screen overflow-hidden bg-game-primary transition-all duration-300">
+      <div className="max-w-4xl mx-auto h-full px-4 py-6 flex flex-col gap-8">
         <ScoreBoard currentScore={score} highScore={highScore} coins={coins} />
         <div className="flex-1 relative">
           <GameArea 
@@ -34,7 +34,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
             onScoreUpdate={onScoreUpdate} 
           />
         </div>
-        <div className="mb-16">
+        <div className="mb-8 sm:mb-16">
           <GameControls
             onStart={onStart}
             onReset={onReset}
