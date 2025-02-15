@@ -45,6 +45,7 @@ export type Database = {
           coins: number | null
           created_at: string
           id: string
+          referral_code: string | null
           telegram_id: string | null
           updated_at: string
           username: string | null
@@ -55,6 +56,7 @@ export type Database = {
           coins?: number | null
           created_at?: string
           id?: string
+          referral_code?: string | null
           telegram_id?: string | null
           updated_at?: string
           username?: string | null
@@ -65,6 +67,7 @@ export type Database = {
           coins?: number | null
           created_at?: string
           id?: string
+          referral_code?: string | null
           telegram_id?: string | null
           updated_at?: string
           username?: string | null
@@ -72,17 +75,76 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referral_code: string
+          referred_id: string | null
+          referrer_id: string | null
+          reward_claimed: boolean | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_id?: string | null
+          referrer_id?: string | null
+          reward_claimed?: boolean | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string | null
+          referrer_id?: string | null
+          reward_claimed?: boolean | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: true
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       increment_coins: {
         Args: {
           user_telegram_id: string
           increment_amount: number
         }
         Returns: undefined
+      }
+      process_referral_reward: {
+        Args: {
+          referral_code_param: string
+          player_id_param: string
+        }
+        Returns: number
       }
       redeem_creator_code: {
         Args: {
