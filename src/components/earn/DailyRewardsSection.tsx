@@ -16,6 +16,25 @@ export const DailyRewardsSection = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    const updateTimeUntilReset = () => {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      
+      const diff = tomorrow.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      setTimeUntilReset(`${hours}h ${minutes}m`);
+    };
+
+    updateTimeUntilReset();
+    const interval = setInterval(updateTimeUntilReset, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     const fetchDailyRewardStatus = async () => {
       if (!playerData?.id) return;
 
@@ -47,25 +66,6 @@ export const DailyRewardsSection = () => {
 
     fetchDailyRewardStatus();
   }, [playerData?.id]);
-
-  useEffect(() => {
-    const updateTimeUntilReset = () => {
-      const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      
-      const diff = tomorrow.getTime() - now.getTime();
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      
-      setTimeUntilReset(`${hours}h ${minutes}m`);
-    };
-
-    updateTimeUntilReset();
-    const interval = setInterval(updateTimeUntilReset, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleClaim = async () => {
     if (!playerData?.id || !canClaim || isLoading) return;
