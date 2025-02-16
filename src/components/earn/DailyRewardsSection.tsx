@@ -23,9 +23,9 @@ export const DailyRewardsSection = () => {
         .from('daily_login_rewards')
         .select('current_streak, last_claim_date')
         .eq('player_id', playerData.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching daily reward status:', error);
         return;
       }
@@ -39,6 +39,8 @@ export const DailyRewardsSection = () => {
                              lastClaim.getFullYear() !== now.getFullYear();
         setCanClaim(canClaimToday);
       } else {
+        // No previous claims, user can claim
+        setStreak(0);
         setCanClaim(true);
       }
     };
