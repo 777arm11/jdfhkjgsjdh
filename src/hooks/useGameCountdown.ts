@@ -1,28 +1,32 @@
-
 import { useState, useEffect, useRef } from 'react';
 
 export const useGameCountdown = (isPlaying: boolean, onCountdownComplete: () => void) => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isPlayingRef = useRef(isPlaying);
 
   useEffect(() => {
-    // Clear any existing timer immediately
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
+    const cleanupTimer = () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+
+    cleanupTimer();
 
     if (isPlaying) {
       setCountdown(3);
-      
+
       timerRef.current = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev === null || prev <= 1) {
-            if (timerRef.current) {
-              clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
-            if (prev === 1) {
+        setCountdown(prev => {
+          if (!isPlayingRef.current || !prev || prev <= 1) {
+            cleanupTimer();
+            if (prev === 1 && isPlayingRef.current) {
               onCountdownComplete();
             }
             return null;
@@ -31,16 +35,10 @@ export const useGameCountdown = (isPlaying: boolean, onCountdownComplete: () => 
         });
       }, 1000);
     } else {
-      // Immediate cleanup on game reset
       setCountdown(null);
     }
 
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
+    return cleanupTimer;
   }, [isPlaying, onCountdownComplete]);
 
   return countdown;
