@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      coin_operation_queue: {
+        Row: {
+          amount: number
+          created_at: string
+          error_message: string | null
+          id: string
+          last_retry: string | null
+          player_id: string
+          retry_count: number | null
+          status: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          last_retry?: string | null
+          player_id: string
+          retry_count?: number | null
+          status?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          last_retry?: string | null
+          player_id?: string
+          retry_count?: number | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       creator_codes: {
         Row: {
           code: string
@@ -128,6 +161,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      batch_increment_coins: {
+        Args: {
+          user_ids: string[]
+          amounts: number[]
+        }
+        Returns: undefined
+      }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string

@@ -1,112 +1,100 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useReducer, useCallback, useRef, useEffect } from 'react';
 import { TargetType } from '@/types/game';
-import { handleCoinIncrement } from '@/utils/coinUtils';
-import { toast } from '@/hooks/use-toast';
-
-const getRandomPosition = () => ({
-  x: Math.random() * 80 + 10,
-  y: Math.random() * 60 + 20,
-});
+import { coinService } from '@/services/coinService';
+import { useToast } from '@/hooks/use-toast';
+import { gameReducer, GameState } from '@/utils/gameUtils';
+import { useGlobalCoins } from '@/contexts/GlobalCoinsContext';
 
 export const useTargetManagement = (score: number, onScoreUpdate: (newScore: number) => void) => {
-  const [targets, setTargets] = useState<TargetType[]>([]);
-  const [mainTargetHit, setMainTargetHit] = useState(false);
-  const [combo, setCombo] = useState(1);
-  const [lastHitTime, setLastHitTime] = useState(0);
+  const { toast } = useToast();
+  const { totalCoins } = useGlobalCoins();
   const timeoutsRef = useRef<number[]>([]);
+  const maxTimeouts = 10; // Prevent memory leaks by limiting concurrent timeouts
+
+  const initialState: GameState = {
+    targets: [],
+    mainTargetHit: false,
+    combo: 1,
+    lastHitTime: 0
+  };
+
+  const [state, dispatch] = useReducer(gameReducer, initialState);
 
   const clearAllTimeouts = useCallback(() => {
     timeoutsRef.current.forEach(timeoutId => window.clearTimeout(timeoutId));
     timeoutsRef.current = [];
   }, []);
 
-  const generateSmallTargets = useCallback(() => {
-    const smallTargets: TargetType[] = [];
-    const numTargets = 5;
-    
-    for (let i = 0; i < numTargets; i++) {
-      smallTargets.push({
-        id: Date.now() + i,
-        position: getRandomPosition(),
-        isHit: false,
-        isMain: false
-      });
+  const addTimeout = useCallback((callback: () => void, delay: number) => {
+    if (timeoutsRef.current.length >= maxTimeouts) {
+      clearAllTimeouts();
     }
-
-    return smallTargets;
-  }, []);
+    const timeoutId = window.setTimeout(callback, delay);
+    timeoutsRef.current.push(timeoutId);
+    return timeoutId;
+  }, [clearAllTimeouts, maxTimeouts]);
 
   const spawnMainTarget = useCallback(() => {
-    clearAllTimeouts(); // Clear any pending timeouts before spawning new target
-    setTargets([{
-      id: Date.now(),
-      position: getRandomPosition(),
-      isHit: false,
-      isMain: true
-    }]);
-    setMainTargetHit(false);
-    setCombo(1);
+    clearAllTimeouts();
+    dispatch({ type: 'SPAWN_MAIN_TARGET' });
   }, [clearAllTimeouts]);
 
-  const handleTargetClick = useCallback(async (targetId: number) => {
-    const target = targets.find(t => t.id === targetId);
-    const currentTime = Date.now();
+  const handleTargetClick = useCallback(async (targetId: string) => {
+    const target = state.targets.find(t => t.id === targetId);
     
     if (!target || target.isHit) return;
 
-    if (currentTime - lastHitTime < 1000) {
-      setCombo(prev => Math.min(prev + 1, 5));
-    } else {
-      setCombo(1);
+    if (totalCoins < state.combo) {
+      toast({
+        title: "Global Pool Depleted",
+        description: "The global coin pool has been depleted!",
+        variant: "destructive",
+      });
+      return;
     }
-    setLastHitTime(currentTime);
 
     try {
-      if (target.isMain && !mainTargetHit) {
-        setMainTargetHit(true);
-        setTargets(prev => [
-          ...prev.map(t => t.id === targetId ? { ...t, isHit: true } : t),
-          ...generateSmallTargets()
-        ]);
-        onScoreUpdate(score + (2 * combo));
-        await handleCoinIncrement(combo);
+      dispatch({ type: 'UPDATE_COMBO', timestamp: Date.now() });
+      
+      if (target.isMain && !state.mainTargetHit) {
+        dispatch({ type: 'HIT_TARGET', targetId });
+        dispatch({ type: 'SPAWN_SMALL_TARGETS' });
+        onScoreUpdate(score + (2 * state.combo));
+        await coinService.incrementCoins(state.combo);
       } else if (!target.isMain) {
-        setTargets(prev =>
-          prev.map(t =>
-            t.id === targetId ? { ...t, isHit: true } : t
-          ).filter(t => !t.isHit || t.id !== targetId)
-        );
-        onScoreUpdate(score + (1 * combo));
-        await handleCoinIncrement(combo);
+        dispatch({ type: 'HIT_TARGET', targetId });
+        onScoreUpdate(score + (1 * state.combo));
+        await coinService.incrementCoins(state.combo);
       }
 
-      const remainingTargets = targets.filter(t => !t.isHit && !t.isMain).length;
-      if (remainingTargets <= 1 && mainTargetHit) {
-        setMainTargetHit(false);
-        const timeoutId = window.setTimeout(spawnMainTarget, 1000);
-        timeoutsRef.current.push(timeoutId);
+      const remainingTargets = state.targets.filter(t => !t.isHit && !t.isMain).length;
+      if (remainingTargets <= 1 && state.mainTargetHit) {
+        addTimeout(spawnMainTarget, 1000);
       }
     } catch (error) {
       console.error('Debug: Error handling target click:', error);
       toast({
         title: "Error",
-        description: "Failed to update coins. Please try again.",
+        description: "Failed to update coins. The operation will be retried automatically.",
         variant: "destructive",
         duration: 3000,
       });
     }
-  }, [score, onScoreUpdate, targets, mainTargetHit, generateSmallTargets, spawnMainTarget, combo]);
+  }, [state, score, onScoreUpdate, spawnMainTarget, addTimeout, toast, totalCoins]);
 
-  // Clean up function is now exposed to be used by the game reset
+  useEffect(() => {
+    return () => {
+      clearAllTimeouts();
+    };
+  }, [clearAllTimeouts]);
+
   return {
-    targets,
-    setTargets,
-    mainTargetHit,
-    setMainTargetHit,
+    targets: state.targets,
+    mainTargetHit: state.mainTargetHit,
+    combo: state.combo,
     handleTargetClick,
     spawnMainTarget,
-    combo,
     clearAllTimeouts
   };
 };
