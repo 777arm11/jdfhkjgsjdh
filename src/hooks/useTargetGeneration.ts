@@ -1,5 +1,7 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { TargetType } from '@/types/game';
+import { generateTargetId } from '@/utils/gameUtils';
 
 export const useTargetGeneration = (isPlaying: boolean) => {
   const [targets, setTargets] = useState<TargetType[]>([]);
@@ -8,7 +10,7 @@ export const useTargetGeneration = (isPlaying: boolean) => {
     if (!isPlaying) return;
     
     const newTarget: TargetType = {
-      id: Date.now(),
+      id: generateTargetId(),
       position: {
         x: 50, // Fixed horizontal position at center
         y: Math.random() * 30 + 50  // Spawn between 50-80% of height
