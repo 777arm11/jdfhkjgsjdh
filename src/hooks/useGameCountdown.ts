@@ -1,19 +1,27 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export const useGameCountdown = (isPlaying: boolean, onCountdownComplete: () => void) => {
   const [countdown, setCountdown] = useState<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
+    // Clear any existing timer immediately
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
 
     if (isPlaying) {
       setCountdown(3);
       
-      timer = setInterval(() => {
+      timerRef.current = setInterval(() => {
         setCountdown((prev) => {
           if (prev === null || prev <= 1) {
-            if (timer) clearInterval(timer);
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
             if (prev === 1) {
               onCountdownComplete();
             }
@@ -23,12 +31,15 @@ export const useGameCountdown = (isPlaying: boolean, onCountdownComplete: () => 
         });
       }, 1000);
     } else {
+      // Immediate cleanup on game reset
       setCountdown(null);
-      if (timer) clearInterval(timer);
     }
 
     return () => {
-      if (timer) clearInterval(timer);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
   }, [isPlaying, onCountdownComplete]);
 

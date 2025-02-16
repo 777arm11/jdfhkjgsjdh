@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { TargetType } from '@/types/game';
 import { handleCoinIncrement } from '@/utils/coinUtils';
 import { toast } from '@/hooks/use-toast';
@@ -14,6 +14,12 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
   const [mainTargetHit, setMainTargetHit] = useState(false);
   const [combo, setCombo] = useState(1);
   const [lastHitTime, setLastHitTime] = useState(0);
+  const timeoutsRef = useRef<number[]>([]);
+
+  const clearAllTimeouts = useCallback(() => {
+    timeoutsRef.current.forEach(timeoutId => window.clearTimeout(timeoutId));
+    timeoutsRef.current = [];
+  }, []);
 
   const generateSmallTargets = useCallback(() => {
     const smallTargets: TargetType[] = [];
@@ -32,6 +38,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
   }, []);
 
   const spawnMainTarget = useCallback(() => {
+    clearAllTimeouts(); // Clear any pending timeouts before spawning new target
     setTargets([{
       id: Date.now(),
       position: getRandomPosition(),
@@ -40,7 +47,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
     }]);
     setMainTargetHit(false);
     setCombo(1);
-  }, []);
+  }, [clearAllTimeouts]);
 
   const handleTargetClick = useCallback(async (targetId: number) => {
     const target = targets.find(t => t.id === targetId);
@@ -48,7 +55,6 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
     
     if (!target || target.isHit) return;
 
-    // Update combo based on time between hits
     if (currentTime - lastHitTime < 1000) {
       setCombo(prev => Math.min(prev + 1, 5));
     } else {
@@ -78,7 +84,8 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
       const remainingTargets = targets.filter(t => !t.isHit && !t.isMain).length;
       if (remainingTargets <= 1 && mainTargetHit) {
         setMainTargetHit(false);
-        setTimeout(spawnMainTarget, 1000);
+        const timeoutId = window.setTimeout(spawnMainTarget, 1000);
+        timeoutsRef.current.push(timeoutId);
       }
     } catch (error) {
       console.error('Debug: Error handling target click:', error);
@@ -91,6 +98,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
     }
   }, [score, onScoreUpdate, targets, mainTargetHit, generateSmallTargets, spawnMainTarget, combo]);
 
+  // Clean up function is now exposed to be used by the game reset
   return {
     targets,
     setTargets,
@@ -98,6 +106,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
     setMainTargetHit,
     handleTargetClick,
     spawnMainTarget,
-    combo
+    combo,
+    clearAllTimeouts
   };
 };

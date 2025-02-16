@@ -6,11 +6,12 @@ export const useGameState = () => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const resetGame = () => {
-    console.log('Debug: Resetting game');
+    // Immediate state reset without async operations
     setIsPlaying(false);
+    console.log('Debug: Game reset immediately');
   };
 
-  const startGame = async () => {
+  const startGame = () => {
     setIsPlaying(true);
     console.log('Debug: Game started');
   };
