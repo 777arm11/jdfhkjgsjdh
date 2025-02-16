@@ -26,7 +26,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <GlobalCoinsProvider>
         <Router>
-          <div className="min-h-screen">
+          <div className="w-full min-h-screen overflow-hidden">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/earn" element={<Earn />} />
