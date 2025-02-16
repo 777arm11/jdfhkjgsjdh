@@ -29,7 +29,7 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) 
   }, [isPlaying, setTargets]);
 
   return (
-    <div className="relative w-full h-[calc(100vh-16rem)] bg-gray-50/50 rounded-lg overflow-hidden transition-all duration-300 ease-in-out">
+    <div className="relative w-full h-[calc(100vh-12rem)] sm:h-[calc(100vh-14rem)] bg-gray-50/50 rounded-lg overflow-hidden transition-all duration-300 ease-in-out">
       {/* Game area boundary indicators */}
       <div className="absolute inset-0 border-4 border-purple-400/30 rounded-lg pointer-events-none" />
       <div className="absolute inset-0 border border-purple-300/20 rounded-lg pointer-events-none" />
