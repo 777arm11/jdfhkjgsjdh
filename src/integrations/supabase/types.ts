@@ -72,6 +72,44 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_login_rewards: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          last_claim_date: string
+          player_id: string | null
+          total_claims: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_claim_date: string
+          player_id?: string | null
+          total_claims?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_claim_date?: string
+          player_id?: string | null
+          total_claims?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_login_rewards_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       players: {
         Row: {
           browser_id: string | null
@@ -167,6 +205,12 @@ export type Database = {
           amounts: number[]
         }
         Returns: undefined
+      }
+      claim_daily_reward: {
+        Args: {
+          p_player_id: string
+        }
+        Returns: number
       }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
