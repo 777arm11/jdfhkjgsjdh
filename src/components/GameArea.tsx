@@ -1,5 +1,5 @@
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import CountdownTimer from '@/components/game/CountdownTimer';
 import TargetList from '@/components/game/TargetList';
 import { useTargetManagement } from '@/hooks/useTargetManagement';
@@ -14,19 +14,19 @@ interface GameAreaProps {
 const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) => {
   const {
     targets,
-    setTargets,
     handleTargetClick,
     spawnMainTarget,
-    combo
+    combo,
+    clearAllTimeouts
   } = useTargetManagement(score, onScoreUpdate);
 
   const countdown = useGameCountdown(isPlaying, spawnMainTarget);
 
   useEffect(() => {
     if (!isPlaying) {
-      setTargets([]);
+      clearAllTimeouts();
     }
-  }, [isPlaying, setTargets]);
+  }, [isPlaying, clearAllTimeouts]);
 
   return (
     <div className="relative w-full h-[calc(100vh-12rem)] sm:h-[calc(100vh-14rem)] bg-black/80 rounded-lg overflow-hidden transition-all duration-300 ease-in-out">

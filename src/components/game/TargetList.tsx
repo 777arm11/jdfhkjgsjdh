@@ -1,10 +1,11 @@
+
 import React from 'react';
 import Target from '@/components/Target';
 import { TargetType } from '@/types/game';
 
 interface TargetListProps {
   targets: TargetType[];
-  onTargetClick: (targetId: number) => void;
+  onTargetClick: (targetId: string) => void;
 }
 
 const TargetList: React.FC<TargetListProps> = React.memo(({ targets, onTargetClick }) => {

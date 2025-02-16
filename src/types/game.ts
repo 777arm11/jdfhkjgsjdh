@@ -1,6 +1,6 @@
 
 export interface TargetType {
-  id: number;
+  id: string;
   position: {
     x: number;
     y: number;
