@@ -1,6 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { getBrowserId } from '@/utils/browserUtils';
+import { Database } from '@/integrations/supabase/types';
+
+type Player = Database['public']['Tables']['players']['Row'];
 
 interface QueuedOperation {
   playerId: string;
@@ -13,8 +16,8 @@ class CoinService {
   private operationQueue: QueuedOperation[] = [];
   private isProcessing: boolean = false;
   private maxRetries: number = 3;
-  private retryDelay: number = 200; // Reduced from 1000ms to 200ms
-  private batchSize: number = 5; // Reduced from 10 to 5
+  private retryDelay: number = 200;
+  private batchSize: number = 5;
   private subscribers: Set<(coins: number) => void> = new Set();
 
   private constructor() {
@@ -43,8 +46,9 @@ class CoinService {
           filter: `browser_id=eq.${browserId}`
         },
         (payload) => {
-          if (payload.new && typeof payload.new.coins === 'number') {
-            this.notifySubscribers(payload.new.coins);
+          const newRecord = payload.new as Player;
+          if (newRecord && typeof newRecord.coins === 'number') {
+            this.notifySubscribers(newRecord.coins);
           }
         }
       )
@@ -73,7 +77,7 @@ class CoinService {
         .eq('browser_id', browserId)
         .single();
 
-      if (currentPlayer) {
+      if (currentPlayer && typeof currentPlayer.coins === 'number') {
         this.notifySubscribers(currentPlayer.coins + amount);
       }
 
@@ -134,7 +138,7 @@ class CoinService {
                 op.retryCount++;
                 setTimeout(() => {
                   this.queueOperation(op.playerId, op.amount);
-                }, this.retryDelay * Math.pow(1.5, op.retryCount)); // Using 1.5 instead of 2 for faster retries
+                }, this.retryDelay * Math.pow(1.5, op.retryCount));
               } else {
                 console.error('Debug: Max retries reached for operation:', op);
               }
@@ -144,7 +148,6 @@ class CoinService {
 
         this.operationQueue = this.operationQueue.slice(this.batchSize);
         
-        // Small delay between batches to prevent rate limiting
         if (this.operationQueue.length > 0) {
           await new Promise(resolve => setTimeout(resolve, 50));
         }
