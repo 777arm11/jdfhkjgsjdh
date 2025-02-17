@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +13,8 @@ interface ReferralStats {
   completedReferrals: number;
   totalRewardsEarned: number;
 }
+
+const BOT_USERNAME = "Hope_Coin_tapbot";
 
 const Refer = () => {
   const { toast } = useToast();
@@ -87,12 +90,13 @@ const Refer = () => {
         return;
       }
 
-      const referralLink = `${window.location.origin}?ref=${playerData.referral_code}`;
-      await navigator.clipboard.writeText(referralLink);
+      // Create Telegram-specific referral link
+      const telegramReferralLink = `https://t.me/${BOT_USERNAME}?start=ref_${playerData.referral_code}`;
+      await navigator.clipboard.writeText(telegramReferralLink);
       
       toast({
         title: "Success!",
-        description: "Referral link copied to clipboard!",
+        description: "Telegram referral link copied to clipboard!",
       });
     } catch (err) {
       console.error('Error handling referral:', err);
@@ -162,7 +166,7 @@ const Refer = () => {
           <div className="bg-game-secondary rounded-lg shadow-md p-6 border border-game-accent">
             <h2 className="text-xl font-pixel text-white mb-4">Share Your Referral Link</h2>
             <p className="text-white/80 font-pixel text-sm mb-6">
-              Invite your friends to join and earn rewards! You'll receive 1000 coins for each friend who joins using your referral link.
+              Invite your friends to join through Telegram and earn rewards! You'll receive 1000 coins for each friend who joins using your referral link.
             </p>
             
             <div className="bg-game-accent p-4 rounded-lg mb-6">
@@ -188,7 +192,7 @@ const Refer = () => {
               className="w-full flex items-center justify-center gap-2 bg-game-accent hover:bg-game-accent/80 text-white font-pixel"
             >
               <Link2 className="h-5 w-5" />
-              Copy Referral Link
+              Copy Telegram Referral Link
             </Button>
           </div>
 
