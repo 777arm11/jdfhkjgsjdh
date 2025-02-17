@@ -13,12 +13,13 @@ class CoinService {
   private operationQueue: QueuedOperation[] = [];
   private isProcessing: boolean = false;
   private maxRetries: number = 3;
-  private retryDelay: number = 1000;
+  private retryDelay: number = 200; // Reduced from 1000ms to 200ms
+  private batchSize: number = 5; // Reduced from 10 to 5
+  private subscribers: Set<(coins: number) => void> = new Set();
 
   private constructor() {
-    // Initialize and start processing queue
+    this.setupRealtimeSubscription();
     this.processQueue();
-    // Listen for online/offline events
     window.addEventListener('online', () => this.processQueue());
   }
 
@@ -29,12 +30,54 @@ class CoinService {
     return CoinService.instance;
   }
 
+  private setupRealtimeSubscription() {
+    const browserId = getBrowserId();
+    const channel = supabase
+      .channel('public:players')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'players',
+          filter: `browser_id=eq.${browserId}`
+        },
+        (payload) => {
+          if (payload.new && typeof payload.new.coins === 'number') {
+            this.notifySubscribers(payload.new.coins);
+          }
+        }
+      )
+      .subscribe();
+  }
+
+  subscribe(callback: (coins: number) => void) {
+    this.subscribers.add(callback);
+    return () => {
+      this.subscribers.delete(callback);
+    };
+  }
+
+  private notifySubscribers(coins: number) {
+    this.subscribers.forEach(callback => callback(coins));
+  }
+
   async incrementCoins(amount: number): Promise<void> {
     const browserId = getBrowserId();
     
     try {
-      console.log('Debug: Attempting to increment coins:', { browserId, amount });
-      
+      // Optimistic update
+      const { data: currentPlayer } = await supabase
+        .from('players')
+        .select('coins')
+        .eq('browser_id', browserId)
+        .single();
+
+      if (currentPlayer) {
+        this.notifySubscribers(currentPlayer.coins + amount);
+      }
+
+      // Immediate processing for single operations
       const { error } = await supabase.rpc('increment_coins', {
         increment_amount: amount,
         user_telegram_id: browserId
@@ -69,9 +112,8 @@ class CoinService {
     console.log('Debug: Processing queue:', this.operationQueue.length, 'operations');
 
     try {
-      const batchSize = 10;
       while (this.operationQueue.length > 0) {
-        const batch = this.operationQueue.slice(0, batchSize);
+        const batch = this.operationQueue.slice(0, this.batchSize);
         const { error } = await supabase.rpc('batch_increment_coins', {
           user_ids: batch.map(op => op.playerId),
           amounts: batch.map(op => op.amount)
@@ -79,19 +121,33 @@ class CoinService {
 
         if (error) {
           console.error('Debug: Error processing batch:', error);
-          batch.forEach(op => {
-            if (op.retryCount < this.maxRetries) {
-              op.retryCount++;
-              setTimeout(() => {
-                this.queueOperation(op.playerId, op.amount);
-              }, this.retryDelay * Math.pow(2, op.retryCount));
-            } else {
-              console.error('Debug: Max retries reached for operation:', op);
+          
+          // Process failed operations individually
+          for (const op of batch) {
+            try {
+              await supabase.rpc('increment_coins', {
+                increment_amount: op.amount,
+                user_telegram_id: op.playerId
+              });
+            } catch (individualError) {
+              if (op.retryCount < this.maxRetries) {
+                op.retryCount++;
+                setTimeout(() => {
+                  this.queueOperation(op.playerId, op.amount);
+                }, this.retryDelay * Math.pow(1.5, op.retryCount)); // Using 1.5 instead of 2 for faster retries
+              } else {
+                console.error('Debug: Max retries reached for operation:', op);
+              }
             }
-          });
+          }
         }
 
-        this.operationQueue = this.operationQueue.slice(batchSize);
+        this.operationQueue = this.operationQueue.slice(this.batchSize);
+        
+        // Small delay between batches to prevent rate limiting
+        if (this.operationQueue.length > 0) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
       }
     } finally {
       this.isProcessing = false;
