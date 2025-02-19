@@ -22,6 +22,7 @@ interface TelegramUpdate {
 }
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -63,7 +64,7 @@ Deno.serve(async (req) => {
 
       // Process referral if exists
       if (referralCode && playerData) {
-        const { data: referralData, error: referralError } = await supabaseClient.rpc(
+        const { error: referralError } = await supabaseClient.rpc(
           'process_referral_reward',
           {
             referral_code_param: referralCode,
@@ -73,8 +74,6 @@ Deno.serve(async (req) => {
 
         if (referralError) {
           console.error('Error processing referral:', referralError)
-        } else {
-          console.log('Referral processed:', referralData)
         }
       }
 
@@ -86,16 +85,23 @@ Deno.serve(async (req) => {
         ? `Welcome! You've joined through a referral link. Get ready to play and earn rewards!`
         : `Welcome to the game! Start playing and earning rewards now!`
 
-      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           chat_id: update.message.chat?.id,
-          text: welcomeMessage
+          text: welcomeMessage,
+          parse_mode: 'HTML'
         }),
       })
+
+      if (!telegramResponse.ok) {
+        const errorData = await telegramResponse.json()
+        console.error('Telegram API error:', errorData)
+        throw new Error(`Telegram API error: ${JSON.stringify(errorData)}`)
+      }
     }
 
     return new Response(
