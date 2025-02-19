@@ -194,6 +194,44 @@ export type Database = {
           },
         ]
       }
+      telegram_users: {
+        Row: {
+          created_at: string | null
+          first_name: string | null
+          id: number
+          last_name: string | null
+          player_id: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          first_name?: string | null
+          id: number
+          last_name?: string | null
+          player_id?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          first_name?: string | null
+          id?: number
+          last_name?: string | null
+          player_id?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_users_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -211,6 +249,15 @@ export type Database = {
           p_player_id: string
         }
         Returns: number
+      }
+      create_telegram_user: {
+        Args: {
+          p_telegram_id: number
+          p_username: string
+          p_first_name: string
+          p_last_name: string
+        }
+        Returns: string
       }
       generate_referral_code: {
         Args: Record<PropertyKey, never>

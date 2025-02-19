@@ -1,1 +1,17 @@
+
 project_id = "ngqsbaihrhhwidrpzjgv"
+
+[api]
+enabled = true
+url = "https://ngqsbaihrhhwidrpzjgv.supabase.co"
+
+[api.cors]
+enabled = true
+
+[[functions]]
+name = "validate-telegram"
+verify_jwt = false
+
+[[functions]]
+name = "handle-telegram-webhook"
+verify_jwt = false
