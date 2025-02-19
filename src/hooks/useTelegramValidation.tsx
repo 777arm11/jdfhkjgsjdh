@@ -16,8 +16,13 @@ export const useTelegramValidation = () => {
         const initData = urlSearchParams.get('initData');
 
         if (!initData) {
-          console.log('Debug: No initData found, assuming test mode');
-          setIsValid(true);
+          console.log('Debug: No initData found, access denied');
+          setIsValid(false);
+          toast({
+            title: "Invalid Access",
+            description: "This game can only be played through Telegram.",
+            variant: "destructive",
+          });
           return;
         }
 
@@ -45,9 +50,10 @@ export const useTelegramValidation = () => {
         }
       } catch (error) {
         console.error('Debug: Error in validation:', error);
+        setIsValid(false);
         toast({
           title: "Error",
-          description: "Failed to validate Telegram data. Please try again.",
+          description: "Failed to validate Telegram data. Please try again through Telegram.",
           variant: "destructive",
         });
       } finally {

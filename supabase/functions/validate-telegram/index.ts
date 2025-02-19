@@ -26,25 +26,26 @@ Deno.serve(async (req) => {
     const { initData } = await req.json() as ValidateRequestBody;
     
     if (!initData) {
-      throw new Error('Missing initData in request body');
+      console.error('Missing initData in request body');
+      return new Response(
+        JSON.stringify({ isValid: false }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
     }
 
-    const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    if (!botToken) {
-      throw new Error('Bot token not configured');
-    }
-
-    // Call the validation function
+    // Call the database validation function
     const { data, error } = await supabaseClient
       .rpc('validate_telegram_init_data', {
         init_data: initData,
-        bot_token: botToken
+        bot_token: Deno.env.get('TELEGRAM_BOT_TOKEN') ?? ''
       });
 
     if (error) {
       console.error('Validation error:', error);
       throw error;
     }
+
+    console.log('Validation result:', data);
 
     return new Response(
       JSON.stringify({ isValid: data }),
@@ -56,7 +57,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message, isValid: false }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
