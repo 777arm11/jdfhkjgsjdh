@@ -11,17 +11,6 @@ export const useTelegramValidation = () => {
   useEffect(() => {
     const validateTelegramData = async () => {
       try {
-        // For development, always allow access
-        const isDev = import.meta.env.DEV;
-        console.log('Debug: Is development mode?', isDev);
-        
-        if (isDev) {
-          console.log('Debug: Development mode - bypassing Telegram validation');
-          setIsValid(true);
-          setIsLoading(false);
-          return;
-        }
-
         // Check for WebApp data first
         const tgWebApp = window.Telegram?.WebApp;
         if (tgWebApp?.initData) {
