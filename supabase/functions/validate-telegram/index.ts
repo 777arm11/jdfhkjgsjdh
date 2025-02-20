@@ -7,7 +7,8 @@ const corsHeaders = {
 }
 
 interface ValidateRequestBody {
-  initData: string;
+  initData?: string;
+  webAppData?: string;
 }
 
 Deno.serve(async (req) => {
@@ -23,45 +24,56 @@ Deno.serve(async (req) => {
     )
 
     // Get request body
-    const { initData } = await req.json() as ValidateRequestBody;
+    const { initData, webAppData } = await req.json() as ValidateRequestBody;
     
-    if (!initData) {
-      console.error('Missing initData in request body');
+    // Handle WebApp validation
+    if (webAppData) {
+      try {
+        const data = JSON.parse(webAppData);
+        // Basic validation of required fields
+        if (data.user_id && data.auth_date) {
+          const timeDiff = Math.floor(Date.now() / 1000) - data.auth_date;
+          // Allow 24 hours validity
+          if (timeDiff < 86400) {
+            return new Response(
+              JSON.stringify({ isValid: true }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+      } catch (e) {
+        console.error('WebApp data parsing error:', e);
+      }
+    }
+
+    // Handle regular Telegram validation
+    if (initData) {
+      const { data, error } = await supabaseClient
+        .rpc('validate_telegram_init_data', {
+          init_data: initData,
+          bot_token: Deno.env.get('TELEGRAM_BOT_TOKEN') ?? ''
+        });
+
+      if (error) {
+        console.error('Validation error:', error);
+        throw error;
+      }
+
       return new Response(
-        JSON.stringify({ isValid: false }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        JSON.stringify({ isValid: data }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Call the database validation function
-    const { data, error } = await supabaseClient
-      .rpc('validate_telegram_init_data', {
-        init_data: initData,
-        bot_token: Deno.env.get('TELEGRAM_BOT_TOKEN') ?? ''
-      });
-
-    if (error) {
-      console.error('Validation error:', error);
-      throw error;
-    }
-
-    console.log('Validation result:', data);
-
     return new Response(
-      JSON.stringify({ isValid: data }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
-    )
+      JSON.stringify({ isValid: false }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error.message, isValid: false }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      },
-    )
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    );
   }
-})
+});

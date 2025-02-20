@@ -22,12 +22,27 @@ export const useTelegramValidation = () => {
           return;
         }
 
-        // Get the init data from URL
+        // Check for WebApp data first
+        const webAppData = window.Telegram?.WebApp?.initData;
+        if (webAppData) {
+          console.log('Debug: Found WebApp data');
+          const { data, error } = await supabase.functions.invoke('validate-telegram', {
+            body: { webAppData }
+          });
+
+          if (!error && data.isValid) {
+            setIsValid(true);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Fallback to URL parameters
         const urlSearchParams = new URLSearchParams(window.location.search);
         const initData = urlSearchParams.get('initData');
 
         if (!initData) {
-          console.log('Debug: No initData found in URL');
+          console.log('Debug: No validation data found');
           setIsValid(false);
           toast({
             title: "Invalid Access",
@@ -37,7 +52,7 @@ export const useTelegramValidation = () => {
           return;
         }
 
-        // Call the validate-telegram edge function
+        // Validate URL parameters
         const { data, error } = await supabase.functions.invoke('validate-telegram', {
           body: { initData }
         });
