@@ -77,8 +77,8 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Get the app URL from environment variables
-      const appUrl = Deno.env.get('APP_URL') || 'https://lovable.dev/projects/598ff028-9e07-4d49-b11d-51fa89f6d295'
+      // Get the app URL from environment variables or use the new default URL
+      const appUrl = Deno.env.get('APP_URL') || 'https://hope-coin-game.lovable.app/'
 
       // Prepare welcome message with game button
       const welcomeMessage = referralCode 
