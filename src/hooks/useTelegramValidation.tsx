@@ -43,7 +43,7 @@ export const useTelegramValidation = () => {
             body: { init_data: tgWebApp.initData },
             headers: {
               Authorization: `Bearer ${session?.access_token}`,
-              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncXNiYWlocmhod2lkcnB6amd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcyMDA3NjksImV4cCI6MjA1Mjc3Njc2OX0.9shij1nAAP0QZdEAFNruH8MY0u6oCAmAVzMTLME-7lU'
             }
           });
 
