@@ -34,35 +34,56 @@ export const useTelegramWebApp = () => {
 
   useEffect(() => {
     if (webapp) {
-      // Initialize the WebApp
-      webapp.ready();
-      webapp.expand();
-      setIsReady(true);
+      console.log('Debug: Initializing Telegram WebApp');
+      try {
+        // Initialize the WebApp
+        webapp.ready();
+        webapp.expand();
+        setIsReady(true);
 
-      // Log initialization
-      console.log('Debug: Telegram WebApp initialized');
-      console.log('Debug: Color scheme:', webapp.colorScheme);
-      console.log('Debug: Init data:', webapp.initData);
+        // Log initialization details
+        console.log('Debug: Telegram WebApp initialized successfully');
+        console.log('Debug: Color scheme:', webapp.colorScheme);
+        console.log('Debug: Init data:', webapp.initData);
+      } catch (error) {
+        console.error('Debug: Error initializing Telegram WebApp:', error);
+      }
+    } else {
+      console.log('Debug: Telegram WebApp not available');
     }
   }, [webapp]);
 
   const showMainButton = (text: string, callback: () => void) => {
     if (webapp?.MainButton) {
-      webapp.MainButton.setText(text);
-      webapp.MainButton.onClick(callback);
-      webapp.MainButton.show();
+      try {
+        webapp.MainButton.setText(text);
+        webapp.MainButton.onClick(callback);
+        webapp.MainButton.show();
+      } catch (error) {
+        console.error('Debug: Error showing main button:', error);
+      }
     }
   };
 
   const hideMainButton = (callback: () => void) => {
     if (webapp?.MainButton) {
-      webapp.MainButton.offClick(callback);
-      webapp.MainButton.hide();
+      try {
+        webapp.MainButton.offClick(callback);
+        webapp.MainButton.hide();
+      } catch (error) {
+        console.error('Debug: Error hiding main button:', error);
+      }
     }
   };
 
   const closeWebApp = () => {
-    webapp?.close();
+    if (webapp) {
+      try {
+        webapp.close();
+      } catch (error) {
+        console.error('Debug: Error closing WebApp:', error);
+      }
+    }
   };
 
   return {
