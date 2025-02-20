@@ -28,6 +28,13 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify the request is coming from Telegram
+    const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
+    if (!botToken) {
+      throw new Error('Bot token not configured')
+    }
+
+    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -44,9 +51,6 @@ Deno.serve(async (req) => {
     
     // Handle /start command
     if (text?.startsWith('/start')) {
-      const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
-      if (!botToken) throw new Error('Bot token not configured')
-
       // Create or update user in database
       const { data: playerData, error: playerError } = await supabaseClient.rpc(
         'create_telegram_user',
@@ -65,6 +69,19 @@ Deno.serve(async (req) => {
 
       // Get the game URL from environment variable or use a default
       const gameUrl = 'https://hope-coin-game.lovable.app'
+
+      // Set up the webhook URL for this bot
+      const webhookUrl = `https://ngqsbaihrhhwidrpzjgv.supabase.co/functions/v1/handle-telegram-webhook`
+      await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: webhookUrl,
+          allowed_updates: ['message']
+        })
+      })
 
       // Prepare the keyboard with the game button using Telegram's WebApp format
       const keyboard = {
