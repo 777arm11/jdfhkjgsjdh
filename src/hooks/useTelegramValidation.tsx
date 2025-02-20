@@ -23,14 +23,14 @@ export const useTelegramValidation = () => {
         }
 
         // Check for WebApp data first
-        const webAppData = window.Telegram?.WebApp?.initData;
-        if (webAppData) {
+        const tgWebApp = window.Telegram?.WebApp;
+        if (tgWebApp?.initData) {
           console.log('Debug: Found WebApp data');
           const { data, error } = await supabase.functions.invoke('validate-telegram', {
-            body: { webAppData }
+            body: { webAppData: tgWebApp.initData }
           });
 
-          if (!error && data.isValid) {
+          if (!error && data?.isValid) {
             setIsValid(true);
             setIsLoading(false);
             return;
