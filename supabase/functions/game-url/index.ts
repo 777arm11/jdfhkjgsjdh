@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     }
 
     // Get the game URL from environment variable or use a default
-    const gameUrl = Deno.env.get('GAME_URL') || 'https://your-game-url.com'
+    const gameUrl = Deno.env.get('GAME_URL') || 'https://hope-coin-game.lovable.app/'
     
     // Generate authentication data
     const authData = {
