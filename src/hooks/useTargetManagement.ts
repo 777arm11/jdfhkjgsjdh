@@ -1,5 +1,5 @@
 
-import { useReducer, useCallback, useRef } from 'react';
+import { useReducer, useCallback, useRef, useEffect } from 'react';
 import { TargetType } from '@/types/game';
 import { coinService } from '@/services/coinService';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +10,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
   const { toast } = useToast();
   const { totalCoins } = useGlobalCoins();
   const timeoutsRef = useRef<number[]>([]);
+  const maxTimeouts = 10; // Prevent memory leaks by limiting concurrent timeouts
 
   const initialState: GameState = {
     targets: [],
@@ -24,6 +25,15 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
     timeoutsRef.current.forEach(timeoutId => window.clearTimeout(timeoutId));
     timeoutsRef.current = [];
   }, []);
+
+  const addTimeout = useCallback((callback: () => void, delay: number) => {
+    if (timeoutsRef.current.length >= maxTimeouts) {
+      clearAllTimeouts();
+    }
+    const timeoutId = window.setTimeout(callback, delay);
+    timeoutsRef.current.push(timeoutId);
+    return timeoutId;
+  }, [clearAllTimeouts, maxTimeouts]);
 
   const spawnMainTarget = useCallback(() => {
     clearAllTimeouts();
@@ -60,18 +70,24 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
 
       const remainingTargets = state.targets.filter(t => !t.isHit && !t.isMain).length;
       if (remainingTargets <= 1 && state.mainTargetHit) {
-        const timeoutId = window.setTimeout(spawnMainTarget, 1000);
-        timeoutsRef.current.push(timeoutId);
+        addTimeout(spawnMainTarget, 1000);
       }
     } catch (error) {
-      console.error('Error handling target click:', error);
+      console.error('Debug: Error handling target click:', error);
       toast({
         title: "Error",
-        description: "Failed to update coins. Please try again.",
+        description: "Failed to update coins. The operation will be retried automatically.",
         variant: "destructive",
+        duration: 3000,
       });
     }
-  }, [state, score, onScoreUpdate, spawnMainTarget, toast, totalCoins]);
+  }, [state, score, onScoreUpdate, spawnMainTarget, addTimeout, toast, totalCoins]);
+
+  useEffect(() => {
+    return () => {
+      clearAllTimeouts();
+    };
+  }, [clearAllTimeouts]);
 
   return {
     targets: state.targets,

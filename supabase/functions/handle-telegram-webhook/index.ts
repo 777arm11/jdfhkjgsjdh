@@ -22,19 +22,11 @@ interface TelegramUpdate {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Verify the request is coming from Telegram
-    const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
-    if (!botToken) {
-      throw new Error('Bot token not configured')
-    }
-
-    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -51,7 +43,9 @@ Deno.serve(async (req) => {
     
     // Handle /start command
     if (text?.startsWith('/start')) {
-      // Create or update user in database
+      const referralCode = text.split(' ')[1]?.replace('ref_', '')
+      
+      // Create or update user
       const { data: playerData, error: playerError } = await supabaseClient.rpc(
         'create_telegram_user',
         {
@@ -67,61 +61,41 @@ Deno.serve(async (req) => {
         throw playerError
       }
 
-      // Get the game URL from environment variable or use a default
-      const gameUrl = 'https://hope-coin-game.lovable.app'
-
-      // Set up the webhook URL for this bot
-      const webhookUrl = `https://ngqsbaihrhhwidrpzjgv.supabase.co/functions/v1/handle-telegram-webhook`
-      await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: webhookUrl,
-          allowed_updates: ['message']
-        })
-      })
-
-      // Prepare the keyboard with the game button using Telegram's WebApp format
-      const keyboard = {
-        inline_keyboard: [[
+      // Process referral if exists
+      if (referralCode && playerData) {
+        const { data: referralData, error: referralError } = await supabaseClient.rpc(
+          'process_referral_reward',
           {
-            text: "🎮 Play Game",
-            web_app: { url: gameUrl }
+            referral_code_param: referralCode,
+            player_id_param: playerData
           }
-        ]]
-      };
+        )
 
-      // Send welcome message with game button
-      const welcomeMessage = `
-Welcome to TapAroo! 🎮
+        if (referralError) {
+          console.error('Error processing referral:', referralError)
+        } else {
+          console.log('Referral processed:', referralData)
+        }
+      }
 
-Tap to earn coins and compete with players worldwide! Ready to start tapping?
+      // Send welcome message
+      const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
+      if (!botToken) throw new Error('Bot token not configured')
 
-• Earn coins by playing
-• Compete on leaderboards
-• Share with friends to earn more
-      `.trim();
+      const welcomeMessage = referralCode 
+        ? `Welcome! You've joined through a referral link. Get ready to play and earn rewards!`
+        : `Welcome to the game! Start playing and earning rewards now!`
 
-      const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           chat_id: update.message.chat?.id,
-          text: welcomeMessage,
-          parse_mode: 'HTML',
-          reply_markup: keyboard
+          text: welcomeMessage
         }),
       })
-
-      if (!telegramResponse.ok) {
-        const errorData = await telegramResponse.json()
-        console.error('Telegram API error:', errorData)
-        throw new Error(`Telegram API error: ${JSON.stringify(errorData)}`)
-      }
     }
 
     return new Response(

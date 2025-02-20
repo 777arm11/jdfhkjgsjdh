@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const useTelegramValidation = () => {
   const [isValid, setIsValid] = useState(false);
@@ -11,73 +11,47 @@ export const useTelegramValidation = () => {
   useEffect(() => {
     const validateTelegramData = async () => {
       try {
-        // Debug: Log window.Telegram object
-        console.log('Debug: window.Telegram object:', window.Telegram);
-        
-        // Check for WebApp data first
-        const tgWebApp = window.Telegram?.WebApp;
-        if (tgWebApp) {
-          console.log('Debug: WebApp found:', tgWebApp);
-          console.log('Debug: InitData:', tgWebApp.initData);
-          console.log('Debug: InitDataUnsafe:', tgWebApp.initDataUnsafe);
-          
-          // Initialize WebApp
-          tgWebApp.ready();
-          tgWebApp.expand();
-          
-          // Set theme variables
-          document.documentElement.style.setProperty(
-            '--tg-theme-bg-color',
-            tgWebApp.backgroundColor || '#ffffff'
-          );
-          document.documentElement.style.setProperty(
-            '--tg-theme-text-color',
-            tgWebApp.textColor || '#000000'
-          );
+        // Get the init data from URL
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        const initData = urlSearchParams.get('initData');
 
-          // Get current session
-          const { data: { session } } = await supabase.auth.getSession();
-
-          // Validate the init data with our backend
-          const { data, error } = await supabase.functions.invoke('validate-telegram', {
-            body: { init_data: tgWebApp.initData },
-            headers: {
-              Authorization: `Bearer ${session?.access_token}`,
-              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncXNiYWlocmhod2lkcnB6amd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcyMDA3NjksImV4cCI6MjA1Mjc3Njc2OX0.9shij1nAAP0QZdEAFNruH8MY0u6oCAmAVzMTLME-7lU'
-            }
-          });
-
-          if (error) {
-            console.error('Debug: Validation error:', error);
-            throw error;
-          }
-
-          console.log('Debug: Validation response:', data);
+        if (!initData) {
+          console.log('Debug: No initData found, assuming test mode');
           setIsValid(true);
-          setIsLoading(false);
           return;
         }
 
-        // If we're here, we didn't find valid Telegram WebApp data
-        console.log('Debug: No valid Telegram WebApp data found');
-        setIsValid(false);
-        setIsLoading(false);
+        console.log('Debug: Validating Telegram initData');
         
-        toast({
-          title: "Invalid Access",
-          description: "This game can only be played through Telegram.",
-          variant: "destructive",
+        // Call the validate-telegram edge function
+        const { data, error } = await supabase.functions.invoke('validate-telegram', {
+          body: { initData }
         });
 
+        if (error) {
+          console.error('Debug: Validation error:', error);
+          throw error;
+        }
+
+        console.log('Debug: Validation result:', data);
+        setIsValid(data.isValid);
+
+        if (!data.isValid) {
+          toast({
+            title: "Invalid Access",
+            description: "Please access this game through Telegram.",
+            variant: "destructive",
+          });
+        }
       } catch (error) {
         console.error('Debug: Error in validation:', error);
-        setIsValid(false);
-        setIsLoading(false);
         toast({
           title: "Error",
           description: "Failed to validate Telegram data. Please try again.",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
