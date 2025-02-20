@@ -13,9 +13,8 @@ export const useTelegramValidation = () => {
   useEffect(() => {
     const validateTelegramData = async () => {
       try {
-        // First try to get initData from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlInitData = urlParams.get('initData'); // Get just the initData parameter value
+        // Get the entire query string (removing the leading '?')
+        const urlInitData = window.location.search.substring(1);
         
         // Use URL initData if available, otherwise fallback to WebApp initData
         const initData = urlInitData || webAppInitData;
