@@ -15,6 +15,10 @@ interface TelegramWebApp {
     auth_date: string;
     hash: string;
   };
+  ready: () => void;
+  expand: () => void;
+  backgroundColor: string;
+  textColor: string;
 }
 
 declare interface Window {

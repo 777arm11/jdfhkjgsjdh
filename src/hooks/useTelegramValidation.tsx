@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useTelegramValidation = () => {
   const [isValid, setIsValid] = useState(false);
@@ -17,6 +18,8 @@ export const useTelegramValidation = () => {
         const tgWebApp = window.Telegram?.WebApp;
         if (tgWebApp) {
           console.log('Debug: WebApp found:', tgWebApp);
+          console.log('Debug: InitData:', tgWebApp.initData);
+          console.log('Debug: InitDataUnsafe:', tgWebApp.initDataUnsafe);
           
           // Initialize WebApp
           tgWebApp.ready();
@@ -31,7 +34,18 @@ export const useTelegramValidation = () => {
             '--tg-theme-text-color',
             tgWebApp.textColor || '#000000'
           );
-          
+
+          // Validate the init data with our backend
+          const { data, error } = await supabase.functions.invoke('validate-telegram', {
+            body: { init_data: tgWebApp.initData }
+          });
+
+          if (error) {
+            console.error('Debug: Validation error:', error);
+            throw error;
+          }
+
+          console.log('Debug: Validation response:', data);
           setIsValid(true);
           setIsLoading(false);
           return;
