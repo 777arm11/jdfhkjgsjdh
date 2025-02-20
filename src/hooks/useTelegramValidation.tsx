@@ -11,6 +11,14 @@ export const useTelegramValidation = () => {
   useEffect(() => {
     const validateTelegramData = async () => {
       try {
+        // For development, always allow access
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Debug: Development mode - bypassing Telegram validation');
+          setIsValid(true);
+          setIsLoading(false);
+          return;
+        }
+
         // Get the init data from URL
         const urlSearchParams = new URLSearchParams(window.location.search);
         const initData = urlSearchParams.get('initData');
@@ -26,8 +34,6 @@ export const useTelegramValidation = () => {
           return;
         }
 
-        console.log('Debug: Validating Telegram initData');
-        
         // Call the validate-telegram edge function
         const { data, error } = await supabase.functions.invoke('validate-telegram', {
           body: { initData }
@@ -38,7 +44,6 @@ export const useTelegramValidation = () => {
           throw error;
         }
 
-        console.log('Debug: Validation result:', data);
         setIsValid(data.isValid);
 
         if (!data.isValid) {
@@ -53,7 +58,7 @@ export const useTelegramValidation = () => {
         setIsValid(false);
         toast({
           title: "Error",
-          description: "Failed to validate Telegram data. Please try again through Telegram.",
+          description: "Failed to validate Telegram data. Please try again.",
           variant: "destructive",
         });
       } finally {
