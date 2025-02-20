@@ -77,13 +77,29 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Send welcome message
-      const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
-      if (!botToken) throw new Error('Bot token not configured')
+      // Get the app URL from environment variables
+      const appUrl = Deno.env.get('APP_URL') || 'https://lovable.dev/projects/598ff028-9e07-4d49-b11d-51fa89f6d295'
 
+      // Prepare welcome message with game button
       const welcomeMessage = referralCode 
         ? `Welcome! You've joined through a referral link. Get ready to play and earn rewards!`
-        : `Welcome to the game! Start playing and earning rewards now!`
+        : `Welcome to Hope Coin Tapper! Tap to earn coins and compete with other players.`
+
+      // Create the keyboard with WebApp button
+      const replyMarkup = {
+        inline_keyboard: [[
+          {
+            text: "🎮 Play Now",
+            web_app: {
+              url: appUrl
+            }
+          }
+        ]]
+      }
+
+      // Send welcome message with game button
+      const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
+      if (!botToken) throw new Error('Bot token not configured')
 
       const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
@@ -93,7 +109,8 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           chat_id: update.message.chat?.id,
           text: welcomeMessage,
-          parse_mode: 'HTML'
+          parse_mode: 'HTML',
+          reply_markup: replyMarkup
         }),
       })
 
