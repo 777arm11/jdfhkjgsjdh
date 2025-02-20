@@ -15,7 +15,7 @@ export const useTelegramValidation = () => {
       try {
         // First try to get initData from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const urlInitData = urlParams.toString();
+        const urlInitData = urlParams.get('initData'); // Get just the initData parameter value
         
         // Use URL initData if available, otherwise fallback to WebApp initData
         const initData = urlInitData || webAppInitData;
