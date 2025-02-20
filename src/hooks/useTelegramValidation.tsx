@@ -8,13 +8,24 @@ export const useTelegramValidation = () => {
   const [isValid, setIsValid] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { initData } = useTelegramWebApp();
+  const { initData: webAppInitData } = useTelegramWebApp();
 
   useEffect(() => {
     const validateTelegramData = async () => {
       try {
+        // First try to get initData from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlInitData = urlParams.toString();
+        
+        // Use URL initData if available, otherwise fallback to WebApp initData
+        const initData = urlInitData || webAppInitData;
+
+        console.log('Debug: URL InitData:', urlInitData);
+        console.log('Debug: WebApp InitData:', webAppInitData);
+        console.log('Debug: Using InitData:', initData);
+
         if (!initData) {
-          console.log('Debug: No initData found, access denied');
+          console.log('Debug: No initData found in URL or WebApp, access denied');
           setIsValid(false);
           toast({
             title: "Invalid Access",
@@ -60,7 +71,7 @@ export const useTelegramValidation = () => {
     };
 
     validateTelegramData();
-  }, [toast, initData]);
+  }, [toast, webAppInitData]);
 
   return { isValid, isLoading };
 };
