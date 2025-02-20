@@ -11,65 +11,44 @@ export const useTelegramValidation = () => {
   useEffect(() => {
     const validateTelegramData = async () => {
       try {
+        // Debug: Log window.Telegram object
+        console.log('Debug: window.Telegram object:', window.Telegram);
+        
         // Check for WebApp data first
         const tgWebApp = window.Telegram?.WebApp;
-        if (tgWebApp?.initData) {
-          console.log('Debug: Found WebApp data');
-          const { data, error } = await supabase.functions.invoke('validate-telegram', {
-            body: { webAppData: tgWebApp.initData }
-          });
-
-          if (!error && data?.isValid) {
+        if (tgWebApp) {
+          console.log('Debug: WebApp found:', tgWebApp);
+          console.log('Debug: InitData:', tgWebApp.initData);
+          console.log('Debug: InitDataUnsafe:', tgWebApp.initDataUnsafe);
+          
+          // Always validate in Telegram WebApp context
+          if (tgWebApp.initData) {
             setIsValid(true);
             setIsLoading(false);
             return;
           }
         }
 
-        // Fallback to URL parameters
-        const urlSearchParams = new URLSearchParams(window.location.search);
-        const initData = urlSearchParams.get('initData');
-
-        if (!initData) {
-          console.log('Debug: No validation data found');
-          setIsValid(false);
-          toast({
-            title: "Invalid Access",
-            description: "This game can only be played through Telegram.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Validate URL parameters
-        const { data, error } = await supabase.functions.invoke('validate-telegram', {
-          body: { initData }
+        // If we're here, we didn't find valid Telegram WebApp data
+        console.log('Debug: No valid Telegram WebApp data found');
+        setIsValid(false);
+        setIsLoading(false);
+        
+        toast({
+          title: "Invalid Access",
+          description: "This game can only be played through Telegram.",
+          variant: "destructive",
         });
 
-        if (error) {
-          console.error('Debug: Validation error:', error);
-          throw error;
-        }
-
-        setIsValid(data.isValid);
-
-        if (!data.isValid) {
-          toast({
-            title: "Invalid Access",
-            description: "Please access this game through Telegram.",
-            variant: "destructive",
-          });
-        }
       } catch (error) {
         console.error('Debug: Error in validation:', error);
         setIsValid(false);
+        setIsLoading(false);
         toast({
           title: "Error",
           description: "Failed to validate Telegram data. Please try again.",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
       }
     };
 
