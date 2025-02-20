@@ -2,19 +2,17 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
 export const useTelegramValidation = () => {
   const [isValid, setIsValid] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { initData } = useTelegramWebApp();
 
   useEffect(() => {
     const validateTelegramData = async () => {
       try {
-        // Get the init data from URL
-        const urlSearchParams = new URLSearchParams(window.location.search);
-        const initData = urlSearchParams.get('initData');
-
         if (!initData) {
           console.log('Debug: No initData found, access denied');
           setIsValid(false);
@@ -62,7 +60,7 @@ export const useTelegramValidation = () => {
     };
 
     validateTelegramData();
-  }, [toast]);
+  }, [toast, initData]);
 
   return { isValid, isLoading };
 };
