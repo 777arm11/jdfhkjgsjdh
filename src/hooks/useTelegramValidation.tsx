@@ -35,12 +35,15 @@ export const useTelegramValidation = () => {
             tgWebApp.textColor || '#000000'
           );
 
+          // Get current session
+          const { data: { session } } = await supabase.auth.getSession();
+
           // Validate the init data with our backend
           const { data, error } = await supabase.functions.invoke('validate-telegram', {
             body: { init_data: tgWebApp.initData },
             headers: {
-              Authorization: `Bearer ${supabase.auth.session()?.access_token}`,
-              apikey: process.env.VITE_SUPABASE_ANON_KEY || ''
+              Authorization: `Bearer ${session?.access_token}`,
+              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY || ''
             }
           });
 
