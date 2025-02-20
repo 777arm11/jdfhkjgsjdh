@@ -12,7 +12,10 @@ export const useTelegramValidation = () => {
     const validateTelegramData = async () => {
       try {
         // For development, always allow access
-        if (process.env.NODE_ENV === 'development') {
+        const isDev = import.meta.env.DEV;
+        console.log('Debug: Is development mode?', isDev);
+        
+        if (isDev) {
           console.log('Debug: Development mode - bypassing Telegram validation');
           setIsValid(true);
           setIsLoading(false);
@@ -24,7 +27,7 @@ export const useTelegramValidation = () => {
         const initData = urlSearchParams.get('initData');
 
         if (!initData) {
-          console.log('Debug: No initData found, access denied');
+          console.log('Debug: No initData found in URL');
           setIsValid(false);
           toast({
             title: "Invalid Access",
