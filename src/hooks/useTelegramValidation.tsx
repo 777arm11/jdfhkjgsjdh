@@ -37,7 +37,11 @@ export const useTelegramValidation = () => {
 
           // Validate the init data with our backend
           const { data, error } = await supabase.functions.invoke('validate-telegram', {
-            body: { init_data: tgWebApp.initData }
+            body: { init_data: tgWebApp.initData },
+            headers: {
+              Authorization: `Bearer ${supabase.auth.session()?.access_token}`,
+              apikey: process.env.VITE_SUPABASE_ANON_KEY || ''
+            }
           });
 
           if (error) {
