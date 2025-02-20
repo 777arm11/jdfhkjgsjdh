@@ -1,6 +1,5 @@
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export const useTelegramValidation = () => {
@@ -18,15 +17,24 @@ export const useTelegramValidation = () => {
         const tgWebApp = window.Telegram?.WebApp;
         if (tgWebApp) {
           console.log('Debug: WebApp found:', tgWebApp);
-          console.log('Debug: InitData:', tgWebApp.initData);
-          console.log('Debug: InitDataUnsafe:', tgWebApp.initDataUnsafe);
           
-          // Always validate in Telegram WebApp context
-          if (tgWebApp.initData) {
-            setIsValid(true);
-            setIsLoading(false);
-            return;
-          }
+          // Initialize WebApp
+          tgWebApp.ready();
+          tgWebApp.expand();
+          
+          // Set theme variables
+          document.documentElement.style.setProperty(
+            '--tg-theme-bg-color',
+            tgWebApp.backgroundColor || '#ffffff'
+          );
+          document.documentElement.style.setProperty(
+            '--tg-theme-text-color',
+            tgWebApp.textColor || '#000000'
+          );
+          
+          setIsValid(true);
+          setIsLoading(false);
+          return;
         }
 
         // If we're here, we didn't find valid Telegram WebApp data

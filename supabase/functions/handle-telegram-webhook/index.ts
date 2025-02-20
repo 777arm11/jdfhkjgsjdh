@@ -63,14 +63,15 @@ Deno.serve(async (req) => {
         throw playerError
       }
 
-      // Prepare the keyboard with the game button
+      // Get the game URL from environment variable or use a default
+      const gameUrl = 'https://hope-coin-game.lovable.app'
+
+      // Prepare the keyboard with the game button using Telegram's WebApp format
       const keyboard = {
         inline_keyboard: [[
           {
             text: "🎮 Play Game",
-            web_app: {
-              url: `https://ngqsbaihrhhwidrpzjgv.supabase.co/functions/v1/game-url?user_id=${from.id}`
-            }
+            web_app: { url: gameUrl }
           }
         ]]
       };
