@@ -1,9 +1,8 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import GameLayout from '@/components/GameLayout';
 import { useTelegramValidation } from '@/hooks/useTelegramValidation';
-import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 import { Loader2, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -19,14 +18,6 @@ const Index = () => {
   } = useGameLogic();
 
   const { isValid, isLoading } = useTelegramValidation();
-  const { isReady, showMainButton, hideMainButton } = useTelegramWebApp();
-
-  useEffect(() => {
-    if (isReady && !isPlaying) {
-      showMainButton('Start Game', startGame);
-      return () => hideMainButton(startGame);
-    }
-  }, [isReady, isPlaying, showMainButton, hideMainButton, startGame]);
 
   if (isLoading) {
     return (
