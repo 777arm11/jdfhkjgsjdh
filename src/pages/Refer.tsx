@@ -67,7 +67,7 @@ const Refer = () => {
         totalReferrals: referrals?.length || 0,
         pendingReferrals: referrals?.filter(r => r.status === 'pending').length || 0,
         completedReferrals: referrals?.filter(r => r.status === 'completed').length || 0,
-        totalRewardsEarned: (referrals?.filter(r => r.status === 'completed').length || 0) * 1000
+        totalRewardsEarned: (referrals?.filter(r => r.status === 'completed').length || 0) * 50 // Updated from 1000 to 50
       };
 
       setReferralStats(stats);
