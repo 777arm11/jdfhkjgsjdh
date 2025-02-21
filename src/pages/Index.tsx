@@ -7,13 +7,10 @@ import { Loader2 } from 'lucide-react';
 
 const Index = () => {
   const {
-    score,
-    highScore,
     isPlaying,
     coins,
     startGame,
-    resetGame,
-    updateScore
+    resetGame
   } = useGameLogic();
 
   const { isValid, isLoading } = useTelegramValidation();
@@ -39,11 +36,8 @@ const Index = () => {
 
   return (
     <GameLayout
-      score={score}
-      highScore={highScore}
       coins={coins}
       isPlaying={isPlaying}
-      onScoreUpdate={updateScore}
       onStart={startGame}
       onReset={resetGame}
     />

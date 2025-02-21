@@ -7,18 +7,16 @@ import { useGameCountdown } from '@/hooks/useGameCountdown';
 
 interface GameAreaProps {
   isPlaying: boolean;
-  score: number;
-  onScoreUpdate: (newScore: number) => void;
 }
 
-const GameArea: React.FC<GameAreaProps> = ({ isPlaying, score, onScoreUpdate }) => {
+const GameArea: React.FC<GameAreaProps> = ({ isPlaying }) => {
   const {
     targets,
     handleTargetClick,
     spawnMainTarget,
     combo,
     clearAllTimeouts
-  } = useTargetManagement(score, onScoreUpdate);
+  } = useTargetManagement();
 
   const countdown = useGameCountdown(isPlaying, spawnMainTarget);
 

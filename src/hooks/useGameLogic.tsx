@@ -1,26 +1,18 @@
 
 import { useGameState } from './useGameState';
-import { useGameScore } from './useGameScore';
 import { usePlayerData } from './usePlayerData';
+import { coinService } from '@/services/coinService';
+import { useToast } from '@/hooks/use-toast';
 
 export const useGameLogic = () => {
-  const { isPlaying, startGame, resetGame: baseResetGame } = useGameState();
-  const { score, highScore, updateScore } = useGameScore();
+  const { isPlaying, startGame, resetGame } = useGameState();
   const { playerData } = usePlayerData();
-
-  const resetGame = () => {
-    // Immediate reset
-    baseResetGame();
-    updateScore(0);
-  };
+  const { toast } = useToast();
 
   return {
-    score,
-    highScore,
     isPlaying,
     coins: playerData?.coins || 0,
     startGame,
-    resetGame,
-    updateScore
+    resetGame
   };
 };
