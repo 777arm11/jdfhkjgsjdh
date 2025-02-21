@@ -24,6 +24,7 @@ export const useTargetManagement = () => {
   const clearAllTimeouts = useCallback(() => {
     timeoutsRef.current.forEach(timeoutId => window.clearTimeout(timeoutId));
     timeoutsRef.current = [];
+    dispatch({ type: 'RESET_GAME' }); // Dispatch reset action when clearing timeouts
   }, []);
 
   const addTimeout = useCallback((callback: () => void, delay: number) => {
