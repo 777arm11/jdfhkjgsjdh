@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { gameReducer, GameState } from '@/utils/gameUtils';
 import { useGlobalCoins } from '@/contexts/GlobalCoinsContext';
 
-export const useTargetManagement = (score: number, onScoreUpdate: (newScore: number) => void) => {
+export const useTargetManagement = () => {
   const { toast } = useToast();
   const { totalCoins } = useGlobalCoins();
   const timeoutsRef = useRef<number[]>([]);
@@ -60,11 +60,9 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
       if (target.isMain && !state.mainTargetHit) {
         dispatch({ type: 'HIT_TARGET', targetId });
         dispatch({ type: 'SPAWN_SMALL_TARGETS' });
-        onScoreUpdate(score + (2 * state.combo));
-        await coinService.incrementCoins(state.combo);
+        await coinService.incrementCoins(state.combo * 2); // Double coins for main target
       } else if (!target.isMain) {
         dispatch({ type: 'HIT_TARGET', targetId });
-        onScoreUpdate(score + (1 * state.combo));
         await coinService.incrementCoins(state.combo);
       }
 
@@ -81,7 +79,7 @@ export const useTargetManagement = (score: number, onScoreUpdate: (newScore: num
         duration: 3000,
       });
     }
-  }, [state, score, onScoreUpdate, spawnMainTarget, addTimeout, toast, totalCoins]);
+  }, [state, spawnMainTarget, addTimeout, toast, totalCoins]);
 
   useEffect(() => {
     return () => {
