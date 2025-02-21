@@ -19,9 +19,11 @@ class CoinService {
   private retryDelay: number = 200;
   private batchSize: number = 5;
   private subscribers: Set<(coins: number) => void> = new Set();
+  private localCoins: number = 0;
 
   private constructor() {
     this.setupRealtimeSubscription();
+    this.initializeLocalCoins();
     this.processQueue();
     window.addEventListener('online', () => this.processQueue());
   }
@@ -31,6 +33,20 @@ class CoinService {
       CoinService.instance = new CoinService();
     }
     return CoinService.instance;
+  }
+
+  private async initializeLocalCoins() {
+    const browserId = getBrowserId();
+    const { data: player } = await supabase
+      .from('players')
+      .select('coins')
+      .eq('browser_id', browserId)
+      .single();
+    
+    if (player) {
+      this.localCoins = player.coins;
+      this.notifySubscribers(this.localCoins);
+    }
   }
 
   private setupRealtimeSubscription() {
@@ -48,8 +64,8 @@ class CoinService {
         (payload) => {
           const newRecord = payload.new as Player;
           if (newRecord && typeof newRecord.coins === 'number') {
-            console.log('Debug: Realtime coin update received:', newRecord.coins);
-            this.notifySubscribers(newRecord.coins);
+            this.localCoins = newRecord.coins;
+            this.notifySubscribers(this.localCoins);
           }
         }
       )
@@ -58,6 +74,7 @@ class CoinService {
 
   subscribe(callback: (coins: number) => void) {
     this.subscribers.add(callback);
+    callback(this.localCoins); // Immediately call with current value
     return () => {
       this.subscribers.delete(callback);
     };
@@ -69,10 +86,13 @@ class CoinService {
 
   async incrementCoins(amount: number): Promise<void> {
     const browserId = getBrowserId();
-    console.log('Debug: Attempting to increment coins by:', amount);
+    
+    // Optimistic update
+    this.localCoins += amount;
+    this.notifySubscribers(this.localCoins);
     
     try {
-      // First, ensure the player exists
+      // Ensure player exists
       const { data: player, error: playerError } = await supabase
         .from('players')
         .select('coins')
@@ -80,32 +100,27 @@ class CoinService {
         .single();
 
       if (playerError) {
-        console.error('Debug: Error fetching player:', playerError);
-        // Create new player if doesn't exist
         const { error: createError } = await supabase
           .from('players')
-          .insert([{ browser_id: browserId, coins: 0 }]);
+          .insert([{ browser_id: browserId, coins: amount }]);
           
         if (createError) throw createError;
+        return;
       }
 
-      // Immediate processing for coin increment
+      // Update coins in database
       const { error } = await supabase.rpc('increment_coins', {
         increment_amount: amount,
         user_telegram_id: browserId
       });
 
       if (error) {
-        console.error('Debug: Error in direct increment:', error);
         this.queueOperation(browserId, amount);
         throw error;
       }
-      
-      console.log('Debug: Coins incremented successfully by:', amount);
     } catch (error) {
-      console.error('Debug: Error in incrementCoins:', error);
+      console.error('Error in incrementCoins:', error);
       this.queueOperation(browserId, amount);
-      throw error;
     }
   }
 

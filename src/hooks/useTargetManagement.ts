@@ -10,7 +10,7 @@ export const useTargetManagement = () => {
   const { toast } = useToast();
   const { totalCoins } = useGlobalCoins();
   const timeoutsRef = useRef<number[]>([]);
-  const maxTimeouts = 10; // Prevent memory leaks by limiting concurrent timeouts
+  const maxTimeouts = 10;
 
   const initialState: GameState = {
     targets: [],
@@ -45,7 +45,7 @@ export const useTargetManagement = () => {
     
     if (!target || target.isHit) return;
 
-    if (totalCoins < state.combo) {
+    if (totalCoins < 1) {
       toast({
         title: "Global Pool Depleted",
         description: "The global coin pool has been depleted!",
@@ -54,30 +54,37 @@ export const useTargetManagement = () => {
       return;
     }
 
-    try {
-      dispatch({ type: 'UPDATE_COMBO', timestamp: Date.now() });
-      
-      if (target.isMain && !state.mainTargetHit) {
-        dispatch({ type: 'HIT_TARGET', targetId });
-        dispatch({ type: 'SPAWN_SMALL_TARGETS' });
-        await coinService.incrementCoins(state.combo * 2); // Double coins for main target
-      } else if (!target.isMain) {
-        dispatch({ type: 'HIT_TARGET', targetId });
-        await coinService.incrementCoins(state.combo);
-      }
+    // Immediately update UI for target hit
+    dispatch({ type: 'HIT_TARGET', targetId });
 
-      const remainingTargets = state.targets.filter(t => !t.isHit && !t.isMain).length;
-      if (remainingTargets <= 1 && state.mainTargetHit) {
-        addTimeout(spawnMainTarget, 1000);
-      }
-    } catch (error) {
-      console.error('Debug: Error handling target click:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update coins. The operation will be retried automatically.",
-        variant: "destructive",
-        duration: 3000,
+    if (target.isMain && !state.mainTargetHit) {
+      // Spawn new targets immediately for main target
+      dispatch({ type: 'SPAWN_SMALL_TARGETS' });
+      // Handle coin increment in background
+      coinService.incrementCoins(1).catch(error => {
+        console.error('Failed to increment coins:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update coins. Will retry automatically.",
+          variant: "destructive",
+        });
       });
+    } else if (!target.isMain) {
+      // Handle coin increment in background for regular targets
+      coinService.incrementCoins(1).catch(error => {
+        console.error('Failed to increment coins:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update coins. Will retry automatically.",
+          variant: "destructive",
+        });
+      });
+    }
+
+    // Check remaining targets and spawn new main target if needed
+    const remainingTargets = state.targets.filter(t => !t.isHit && !t.isMain).length;
+    if (remainingTargets <= 1 && state.mainTargetHit) {
+      addTimeout(spawnMainTarget, 1000);
     }
   }, [state, spawnMainTarget, addTimeout, toast, totalCoins]);
 
