@@ -45,7 +45,7 @@ export const ReferralLink = ({ referralCode }: ReferralLinkProps) => {
     <div className="bg-game-secondary rounded-lg shadow-md p-6 border border-game-accent">
       <h2 className="text-xl font-pixel text-white mb-4">Share Your Referral Link</h2>
       <p className="text-white/80 font-pixel text-sm mb-6">
-        Invite your friends to join through Telegram and earn rewards! You'll receive 1000 coins for each friend who joins using your referral link.
+        Invite your friends to join through Telegram and earn rewards! You'll receive 50 coins for each friend who joins using your referral link.
       </p>
       
       <div className="bg-game-accent p-4 rounded-lg mb-6">
