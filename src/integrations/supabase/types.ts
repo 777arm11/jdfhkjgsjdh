@@ -153,6 +153,7 @@ export type Database = {
           referral_code: string
           referred_id: string | null
           referrer_id: string | null
+          reward_amount: number | null
           reward_claimed: boolean | null
           status: string | null
           updated_at: string
@@ -163,6 +164,7 @@ export type Database = {
           referral_code: string
           referred_id?: string | null
           referrer_id?: string | null
+          reward_amount?: number | null
           reward_claimed?: boolean | null
           status?: string | null
           updated_at?: string
@@ -173,6 +175,7 @@ export type Database = {
           referral_code?: string
           referred_id?: string | null
           referrer_id?: string | null
+          reward_amount?: number | null
           reward_claimed?: boolean | null
           status?: string | null
           updated_at?: string

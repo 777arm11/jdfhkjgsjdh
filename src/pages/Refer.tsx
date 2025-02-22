@@ -14,6 +14,18 @@ interface ReferralStats {
   totalRewardsEarned: number;
 }
 
+interface Referral {
+  created_at: string;
+  id: string;
+  referral_code: string;
+  referred_id: string;
+  referrer_id: string;
+  reward_claimed: boolean;
+  reward_amount: number;
+  status: string;
+  updated_at: string;
+}
+
 const Refer = () => {
   const { toast } = useToast();
   const { playerData } = usePlayerData();
@@ -67,8 +79,7 @@ const Refer = () => {
         totalReferrals: referrals?.length || 0,
         pendingReferrals: referrals?.filter(r => r.status === 'pending').length || 0,
         completedReferrals: referrals?.filter(r => r.status === 'completed').length || 0,
-        totalRewardsEarned: referrals?.reduce((total, ref) => {
-          // If reward_amount is set, use it, otherwise use 50 for new referrals
+        totalRewardsEarned: referrals?.reduce((total, ref: Referral) => {
           return total + (ref.status === 'completed' ? (ref.reward_amount || 50) : 0);
         }, 0) || 0
       };
