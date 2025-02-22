@@ -253,19 +253,36 @@ export type Database = {
         }
         Returns: number
       }
-      create_telegram_user: {
-        Args: {
-          p_telegram_id: number
-          p_username: string
-          p_first_name: string
-          p_last_name: string
-        }
-        Returns: string
-      }
-      generate_referral_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      create_telegram_user:
+        | {
+            Args: {
+              p_telegram_id: number
+              p_username: string
+              p_first_name: string
+              p_last_name: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_username: string
+              p_first_name: string
+              p_last_name: string
+              p_player_id: string
+            }
+            Returns: number
+          }
+      generate_referral_code:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: string
+          }
+        | {
+            Args: {
+              p_user_id: number
+            }
+            Returns: string
+          }
       increment_coins: {
         Args: {
           user_telegram_id: string
