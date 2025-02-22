@@ -31,23 +31,58 @@ Deno.serve(async (req) => {
 
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
     if (!botToken) {
+      console.error('Bot token not configured');
       throw new Error('Bot token not configured');
     }
 
-    // Call the validation function
-    const { data, error } = await supabaseClient
+    // First validate the hash
+    const { data: hashValid, error: hashError } = await supabaseClient
       .rpc('validate_telegram_init_data', {
         init_data: initData,
         bot_token: botToken
       });
 
-    if (error) {
-      console.error('Validation error:', error);
-      throw error;
+    if (hashError) {
+      console.error('Hash validation error:', hashError);
+      throw hashError;
     }
 
+    if (!hashValid) {
+      console.error('Invalid hash in Telegram data');
+      return new Response(
+        JSON.stringify({ isValid: false, reason: 'Invalid hash' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        },
+      )
+    }
+
+    // Then validate the auth date
+    const { data: dateValid, error: dateError } = await supabaseClient
+      .rpc('validate_telegram_init_data', {
+        init_data: initData
+      });
+
+    if (dateError) {
+      console.error('Date validation error:', dateError);
+      throw dateError;
+    }
+
+    if (!dateValid) {
+      console.error('Expired auth date in Telegram data');
+      return new Response(
+        JSON.stringify({ isValid: false, reason: 'Auth date expired' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        },
+      )
+    }
+
+    // Both validations passed
     return new Response(
-      JSON.stringify({ isValid: data }),
+      JSON.stringify({ isValid: true }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

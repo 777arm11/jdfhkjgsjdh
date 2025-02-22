@@ -16,8 +16,13 @@ export const useTelegramValidation = () => {
         const initData = urlSearchParams.get('initData');
 
         if (!initData) {
-          console.log('Debug: No initData found, assuming test mode');
-          setIsValid(true);
+          console.log('Debug: No initData found, access denied');
+          setIsValid(false);
+          toast({
+            title: "Invalid Access",
+            description: "Please access this game through Telegram.",
+            variant: "destructive",
+          });
           return;
         }
 
@@ -59,7 +64,7 @@ export const useTelegramValidation = () => {
         } else {
           toast({
             title: "Invalid Access",
-            description: "Please access this game through Telegram.",
+            description: data.reason || "Please access this game through Telegram.",
             variant: "destructive",
           });
         }
