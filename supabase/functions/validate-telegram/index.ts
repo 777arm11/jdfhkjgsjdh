@@ -26,31 +26,38 @@ Deno.serve(async (req) => {
     const { initData } = await req.json() as ValidateRequestBody;
     
     if (!initData) {
+      console.error('Debug: Missing initData in request body');
       throw new Error('Missing initData in request body');
     }
 
+    console.log('Debug: Starting Telegram validation for initData:', initData);
+
     const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
     if (!botToken) {
-      console.error('Bot token not configured');
+      console.error('Debug: Bot token not configured');
       throw new Error('Bot token not configured');
     }
 
     // First validate the hash
+    console.log('Debug: Validating Telegram hash...');
     const { data: hashValid, error: hashError } = await supabaseClient
-      .rpc('validate_telegram_init_data', {
+      .rpc('validate_telegram_hash', {
         init_data: initData,
         bot_token: botToken
       });
 
     if (hashError) {
-      console.error('Hash validation error:', hashError);
+      console.error('Debug: Hash validation error:', hashError);
       throw hashError;
     }
 
     if (!hashValid) {
-      console.error('Invalid hash in Telegram data');
+      console.log('Debug: Invalid hash in Telegram data');
       return new Response(
-        JSON.stringify({ isValid: false, reason: 'Invalid hash' }),
+        JSON.stringify({ 
+          isValid: false, 
+          reason: 'Invalid hash - please access through Telegram' 
+        }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
@@ -59,20 +66,24 @@ Deno.serve(async (req) => {
     }
 
     // Then validate the auth date
+    console.log('Debug: Validating Telegram auth date...');
     const { data: dateValid, error: dateError } = await supabaseClient
-      .rpc('validate_telegram_init_data', {
+      .rpc('validate_telegram_date', {
         init_data: initData
       });
 
     if (dateError) {
-      console.error('Date validation error:', dateError);
+      console.error('Debug: Date validation error:', dateError);
       throw dateError;
     }
 
     if (!dateValid) {
-      console.error('Expired auth date in Telegram data');
+      console.log('Debug: Expired auth date in Telegram data');
       return new Response(
-        JSON.stringify({ isValid: false, reason: 'Auth date expired' }),
+        JSON.stringify({ 
+          isValid: false, 
+          reason: 'Auth date expired - please refresh the game' 
+        }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
@@ -80,6 +91,7 @@ Deno.serve(async (req) => {
       )
     }
 
+    console.log('Debug: Telegram validation successful');
     // Both validations passed
     return new Response(
       JSON.stringify({ isValid: true }),
@@ -89,9 +101,13 @@ Deno.serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Debug: Error in validation:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        isValid: false,
+        reason: 'Validation failed - please try again'
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

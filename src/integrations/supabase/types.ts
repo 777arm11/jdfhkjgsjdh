@@ -287,24 +287,23 @@ export type Database = {
         }
         Returns: number
       }
-      validate_telegram_init_data:
-        | {
-            Args: Record<PropertyKey, never>
-            Returns: undefined
-          }
-        | {
-            Args: {
-              init_data: string
-            }
-            Returns: boolean
-          }
-        | {
-            Args: {
-              init_data: string
-              bot_token: string
-            }
-            Returns: boolean
-          }
+      validate_telegram_date: {
+        Args: {
+          init_data: string
+        }
+        Returns: boolean
+      }
+      validate_telegram_hash: {
+        Args: {
+          init_data: string
+          bot_token: string
+        }
+        Returns: boolean
+      }
+      validate_telegram_init_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
