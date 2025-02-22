@@ -36,7 +36,27 @@ export const useTelegramValidation = () => {
         console.log('Debug: Validation result:', data);
         setIsValid(data.isValid);
 
-        if (!data.isValid) {
+        if (data.isValid) {
+          // Parse user data from initData
+          const params = new URLSearchParams(initData);
+          const userStr = params.get('user');
+          if (userStr) {
+            try {
+              const user = JSON.parse(decodeURIComponent(userStr));
+              // Create or update telegram user
+              if (user.id) {
+                await supabase.rpc('create_telegram_user', {
+                  p_telegram_id: user.id,
+                  p_username: user.username || '',
+                  p_first_name: user.first_name || '',
+                  p_last_name: user.last_name || ''
+                });
+              }
+            } catch (e) {
+              console.error('Error processing Telegram user data:', e);
+            }
+          }
+        } else {
           toast({
             title: "Invalid Access",
             description: "Please access this game through Telegram.",
