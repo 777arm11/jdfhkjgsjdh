@@ -106,6 +106,7 @@ export const usePlayerData = () => {
 
   return {
     playerData,
-    playerError
+    playerError,
+    telegramId // Now exposing telegramId in the return value
   };
 };
