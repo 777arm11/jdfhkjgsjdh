@@ -6,24 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import { ReferralStats } from "@/components/refer/ReferralStats";
 import { ReferralLink } from "@/components/refer/ReferralLink";
 import { WalletSection } from "@/components/refer/WalletSection";
+import { Database } from "@/integrations/supabase/types";
+
+type Referral = Database['public']['Tables']['referrals']['Row'];
 
 interface ReferralStats {
   totalReferrals: number;
   pendingReferrals: number;
   completedReferrals: number;
   totalRewardsEarned: number;
-}
-
-interface Referral {
-  created_at: string;
-  id: string;
-  referral_code: string;
-  referred_id: string;
-  referrer_id: string;
-  reward_claimed: boolean;
-  reward_amount: number;
-  status: string;
-  updated_at: string;
 }
 
 const Refer = () => {
