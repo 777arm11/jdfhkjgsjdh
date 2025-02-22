@@ -27,10 +27,11 @@ export const usePlayerData = () => {
     }
   };
   
+  const telegramId = getTelegramData();
+  
   const { data: playerData, error: playerError } = useQuery({
-    queryKey: ['player', browserId],
+    queryKey: ['player', browserId, telegramId],
     queryFn: async () => {
-      const telegramId = getTelegramData();
       console.log('Debug: Fetching player data for:', { telegramId, browserId });
       
       // Try to get existing player by Telegram ID first
