@@ -67,7 +67,10 @@ const Refer = () => {
         totalReferrals: referrals?.length || 0,
         pendingReferrals: referrals?.filter(r => r.status === 'pending').length || 0,
         completedReferrals: referrals?.filter(r => r.status === 'completed').length || 0,
-        totalRewardsEarned: (referrals?.filter(r => r.status === 'completed').length || 0) * 50 // Updated from 1000 to 50
+        totalRewardsEarned: referrals?.reduce((total, ref) => {
+          // If reward_amount is set, use it, otherwise use 50 for new referrals
+          return total + (ref.status === 'completed' ? (ref.reward_amount || 50) : 0);
+        }, 0) || 0
       };
 
       setReferralStats(stats);
