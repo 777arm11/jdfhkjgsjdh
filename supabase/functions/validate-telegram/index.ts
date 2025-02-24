@@ -1,128 +1,123 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface ValidateRequestBody {
-  initData: string;
+interface TelegramUser {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log('Debug: Starting validation process');
+    // Get the request body
+    const { initData } = await req.json()
     
-    // Get environment variables
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Debug: Missing Supabase configuration');
-      throw new Error('Server configuration error');
-    }
-
-    if (!botToken) {
-      console.error('Debug: Missing bot token');
-      throw new Error('Bot token not configured');
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Parse request body
-    const requestData = await req.json() as ValidateRequestBody;
-    console.log('Debug: Received request data:', requestData);
-
-    if (!requestData.initData) {
-      console.error('Debug: Missing initData in request');
-      throw new Error('Missing initData in request');
-    }
-
-    // Validate hash
-    console.log('Debug: Validating hash...');
-    const { data: hashValid, error: hashError } = await supabase.rpc(
-      'validate_telegram_hash',
-      {
-        init_data: requestData.initData,
-        bot_token: botToken
-      }
-    );
-
-    if (hashError) {
-      console.error('Debug: Hash validation error:', hashError);
-      throw hashError;
-    }
-
-    if (!hashValid) {
-      console.log('Debug: Invalid hash');
+    if (!initData) {
+      console.error('No init data provided');
       return new Response(
-        JSON.stringify({
-          isValid: false,
-          reason: 'Invalid hash - please access through Telegram'
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
+        JSON.stringify({ isValid: false, reason: 'No init data provided' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Validate date
-    console.log('Debug: Validating date...');
-    const { data: dateValid, error: dateError } = await supabase.rpc(
-      'validate_telegram_date',
-      {
-        init_data: requestData.initData
-      }
-    );
+    // Create Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    if (dateError) {
-      console.error('Debug: Date validation error:', dateError);
-      throw dateError;
-    }
+    // Validate the hash
+    const { data: validationResult, error: validationError } = await supabaseClient
+      .rpc('validate_telegram_hash', {
+        init_data: initData,
+        bot_token: Deno.env.get('TELEGRAM_BOT_TOKEN') || ''
+      })
 
-    if (!dateValid) {
-      console.log('Debug: Expired auth date');
+    if (validationError || !validationResult) {
+      console.error('Hash validation failed:', validationError);
       return new Response(
-        JSON.stringify({
-          isValid: false,
-          reason: 'Auth date expired - please refresh the game'
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
+        JSON.stringify({ isValid: false, reason: 'Invalid hash' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    console.log('Debug: Validation successful');
+    // Validate the date
+    const { data: dateValid, error: dateError } = await supabaseClient
+      .rpc('validate_telegram_date', {
+        init_data: initData
+      })
+
+    if (dateError || !dateValid) {
+      console.error('Date validation failed:', dateError);
+      return new Response(
+        JSON.stringify({ isValid: false, reason: 'Init data has expired' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Parse user data from init_data
+    const params = new URLSearchParams(initData);
+    const userStr = params.get('user');
+    let user: TelegramUser | null = null;
+    
+    if (userStr) {
+      try {
+        user = JSON.parse(decodeURIComponent(userStr));
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+
+    // If we have valid user data, create/update the user
+    if (user?.id) {
+      const { error: userError } = await supabaseClient
+        .rpc('create_telegram_user', {
+          p_telegram_id: user.id,
+          p_username: user.username || '',
+          p_first_name: user.first_name || '',
+          p_last_name: user.last_name || ''
+        })
+
+      if (userError) {
+        console.error('Error creating/updating user:', userError);
+      }
+    }
+
+    // Return success with user data
     return new Response(
-      JSON.stringify({ isValid: true }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
-    );
+      JSON.stringify({ 
+        isValid: true,
+        user: user,
+        debug: { validationResult, dateValid }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
   } catch (error) {
-    console.error('Debug: Function error:', error);
+    console.error('Error in validate-telegram function:', error);
     return new Response(
-      JSON.stringify({
-        error: error.message,
-        isValid: false,
-        reason: 'Validation failed - please try again'
+      JSON.stringify({ 
+        isValid: false, 
+        reason: 'Internal server error',
+        debug: error.message 
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    );
+    )
   }
-});
+})
