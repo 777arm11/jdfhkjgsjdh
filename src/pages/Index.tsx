@@ -3,6 +3,7 @@ import React from 'react';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import GameLayout from '@/components/GameLayout';
 import { useTelegramValidation } from '@/hooks/useTelegramValidation';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 import { Loader2 } from 'lucide-react';
 
 const Index = () => {
@@ -14,6 +15,7 @@ const Index = () => {
   } = useGameLogic();
 
   const { isValid, isLoading } = useTelegramValidation();
+  const { hapticFeedback, showError, colorScheme } = useTelegramWebApp();
 
   if (isLoading) {
     return (
@@ -24,6 +26,7 @@ const Index = () => {
   }
 
   if (!isValid) {
+    showError("Please access this game through Telegram.");
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-game-primary p-4 text-center">
         <h1 className="text-2xl font-pixel text-white mb-4">Invalid Access</h1>
@@ -34,13 +37,25 @@ const Index = () => {
     );
   }
 
+  const handleStart = () => {
+    hapticFeedback('medium');
+    startGame();
+  };
+
+  const handleReset = () => {
+    hapticFeedback('heavy');
+    resetGame();
+  };
+
   return (
-    <GameLayout
-      coins={coins}
-      isPlaying={isPlaying}
-      onStart={startGame}
-      onReset={resetGame}
-    />
+    <div className={colorScheme === 'dark' ? 'dark' : ''}>
+      <GameLayout
+        coins={coins}
+        isPlaying={isPlaying}
+        onStart={handleStart}
+        onReset={handleReset}
+      />
+    </div>
   );
 };
 

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import ParticleEffect from './game/ParticleEffect';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
 interface TargetProps {
   position: { x: number; y: number };
@@ -12,9 +13,9 @@ interface TargetProps {
 
 const Target: React.FC<TargetProps> = React.memo(({ position, onClick, isHit, size = 'small' }) => {
   const [showParticles, setShowParticles] = useState(false);
+  const { themeParams } = useTelegramWebApp();
 
   const handleClick = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
     setShowParticles(true);
     onClick();
     setTimeout(() => setShowParticles(false), 500);
@@ -35,7 +36,8 @@ const Target: React.FC<TargetProps> = React.memo(({ position, onClick, isHit, si
           backgroundImage: 'url(/lovable-uploads/7db07855-ed96-42bd-a8c5-182360b878c6.png)',
           backgroundSize: 'contain',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
+          backgroundColor: themeParams?.button_color || '#8B5CF6',
         }}
         onClick={handleClick}
       />

@@ -4,6 +4,7 @@ import CountdownTimer from '@/components/game/CountdownTimer';
 import TargetList from '@/components/game/TargetList';
 import { useTargetManagement } from '@/hooks/useTargetManagement';
 import { useGameCountdown } from '@/hooks/useGameCountdown';
+import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
 interface GameAreaProps {
   isPlaying: boolean;
@@ -18,6 +19,7 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying }) => {
     clearAllTimeouts
   } = useTargetManagement();
 
+  const { hapticFeedback } = useTelegramWebApp();
   const countdown = useGameCountdown(isPlaying, spawnMainTarget);
 
   useEffect(() => {
@@ -25,6 +27,11 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying }) => {
       clearAllTimeouts();
     }
   }, [isPlaying, clearAllTimeouts]);
+
+  const handleTargetHit = (targetId: string) => {
+    hapticFeedback('light');
+    handleTargetClick(targetId);
+  };
 
   return (
     <div className="relative w-full h-[calc(100vh-12rem)] sm:h-[calc(100vh-14rem)] bg-black/80 rounded-lg overflow-hidden transition-all duration-300 ease-in-out">
@@ -49,7 +56,7 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying }) => {
       <CountdownTimer countdown={countdown} />
       <TargetList 
         targets={targets} 
-        onTargetClick={handleTargetClick} 
+        onTargetClick={handleTargetHit} 
       />
     </div>
   );
