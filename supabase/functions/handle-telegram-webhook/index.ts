@@ -1,11 +1,9 @@
-
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Max-Age': '86400',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 interface TelegramUpdate {
@@ -23,23 +21,26 @@ interface TelegramUpdate {
   };
 }
 
-// Helper function to send Telegram messages
-async function sendTelegramMessage(chatId: number, text: string) {
+// Helper function to send Telegram messages with inline keyboard support
+async function sendTelegramMessage(chatId: number, text: string, inlineKeyboard?: any) {
   const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
   if (!botToken) {
     throw new Error('Bot token not configured');
   }
+
+  const messageData = {
+    chat_id: chatId,
+    text: text,
+    parse_mode: 'HTML',
+    reply_markup: inlineKeyboard
+  };
 
   const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: text,
-      parse_mode: 'HTML'
-    }),
+    body: JSON.stringify(messageData),
   });
 
   if (!response.ok) {
@@ -51,49 +52,10 @@ async function sendTelegramMessage(chatId: number, text: string) {
   return response.json();
 }
 
-// Process referral code from /start command
-async function processReferralCode(referralCode: string, playerId: string) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Database configuration missing');
-  }
-
-  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-
-  try {
-    const { data, error } = await supabaseAdmin.rpc('process_referral_reward', {
-      referral_code_param: referralCode,
-      player_id_param: playerId
-    });
-
-    if (error) {
-      console.error('Error processing referral:', error);
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('Error in processReferralCode:', error);
-    return false;
-  }
-}
-
-Deno.serve(async (req) => {
+serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders,
-    });
-  }
-
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -111,48 +73,28 @@ Deno.serve(async (req) => {
       throw new Error('Chat ID missing from update');
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Database configuration missing');
-    }
-
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-
     // Handle /start command
     if (text?.startsWith('/start')) {
       console.log('Processing /start command');
-      const referralCode = text.split(' ')[1]?.replace('ref_', '');
+
+      // Get the game URL from environment variable
+      const gameUrl = Deno.env.get('GAME_URL') || 'https://your-game-url.com';
       
-      // Create or update user
-      const { data: playerData, error: playerError } = await supabaseAdmin.rpc(
-        'create_telegram_user',
-        {
-          p_telegram_id: from.id,
-          p_username: from.username || '',
-          p_first_name: from.first_name || '',
-          p_last_name: from.last_name || ''
-        }
-      );
+      // Create inline keyboard with game launch button
+      const inlineKeyboard = {
+        inline_keyboard: [[
+          {
+            text: "🎮 Play Taparoo",
+            web_app: { url: gameUrl }
+          }
+        ]]
+      };
 
-      if (playerError) {
-        console.error('Error creating player:', playerError);
-        throw playerError;
-      }
+      const welcomeMessage = `Welcome to Taparoo! 🎮\n\n` +
+        `Get ready to tap your way to the top and compete with players worldwide! ` +
+        `Click the button below to start playing! 🎯`;
 
-      // Process referral if exists
-      let referralSuccess = false;
-      if (referralCode && playerData) {
-        referralSuccess = await processReferralCode(referralCode, playerData);
-      }
-
-      // Send welcome message
-      const welcomeMessage = referralSuccess 
-        ? `Welcome to Taparoo! 🎮\n\nYou've joined through a referral link and received your bonus coins! Start playing now and earn more rewards! 🎁\n\nType /help to see all available commands.`
-        : `Welcome to Taparoo! 🎮\n\nGet ready to tap your way to the top! Start playing now and earn rewards! 🎯\n\nType /help to see all available commands.`;
-
-      await sendTelegramMessage(chat.id, welcomeMessage);
+      await sendTelegramMessage(chat.id, welcomeMessage, inlineKeyboard);
     } 
     // Handle /help command
     else if (text === '/help') {
@@ -167,6 +109,14 @@ Deno.serve(async (req) => {
     }
     // Handle /balance command
     else if (text === '/balance') {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error('Database configuration missing');
+      }
+
+      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
       const { data: player, error: playerError } = await supabaseAdmin
         .from('players')
         .select('coins')
@@ -182,6 +132,14 @@ Deno.serve(async (req) => {
     }
     // Handle /referral command
     else if (text === '/referral') {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error('Database configuration missing');
+      }
+
+      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
       const { data: player, error: playerError } = await supabaseAdmin
         .from('players')
         .select('referral_code')
@@ -222,4 +180,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-
