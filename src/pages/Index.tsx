@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import GameLayout from '@/components/GameLayout';
 import { useTelegramValidation } from '@/hooks/useTelegramValidation';
@@ -17,6 +17,13 @@ const Index = () => {
   const { isValid, isLoading } = useTelegramValidation();
   const { hapticFeedback, showError, colorScheme } = useTelegramWebApp();
 
+  // Move the error notification to useEffect
+  useEffect(() => {
+    if (!isLoading && !isValid) {
+      showError("Please access this game through Telegram.");
+    }
+  }, [isLoading, isValid, showError]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-game-primary">
@@ -26,7 +33,6 @@ const Index = () => {
   }
 
   if (!isValid) {
-    showError("Please access this game through Telegram.");
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-game-primary p-4 text-center">
         <h1 className="text-2xl font-pixel text-white mb-4">Invalid Access</h1>
