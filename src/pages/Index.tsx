@@ -15,7 +15,27 @@ const Index = () => {
   } = useGameLogic();
 
   const { isValid, isLoading } = useTelegramValidation();
-  const { hapticFeedback, showError, colorScheme } = useTelegramWebApp();
+  const { hapticFeedback, showError, colorScheme, isWebAppAvailable } = useTelegramWebApp();
+
+  // Add debug logging
+  useEffect(() => {
+    console.log('Debug: Game component mounted');
+    console.log('Debug: Environment:', process.env.NODE_ENV);
+    console.log('Debug: isValid:', isValid, 'isLoading:', isLoading);
+    console.log('Debug: Telegram WebApp available:', isWebAppAvailable);
+    
+    // Log window.Telegram object
+    if (window.Telegram) {
+      console.log('Debug: window.Telegram exists');
+      console.log('Debug: WebApp available:', !!window.Telegram.WebApp);
+      if (window.Telegram.WebApp) {
+        console.log('Debug: initData exists:', !!window.Telegram.WebApp.initData);
+        console.log('Debug: user exists:', !!window.Telegram.WebApp.initDataUnsafe?.user);
+      }
+    } else {
+      console.log('Debug: window.Telegram does not exist');
+    }
+  }, [isValid, isLoading, isWebAppAvailable]);
 
   // Move the error notification to useEffect
   useEffect(() => {
@@ -38,6 +58,9 @@ const Index = () => {
         <h1 className="text-2xl font-pixel text-white mb-4">Invalid Access</h1>
         <p className="text-white/80 font-pixel">
           Please access this game through Telegram.
+        </p>
+        <p className="text-white/60 text-sm mt-4">
+          To play Taparoo, open the game through Telegram's menu or use the direct link provided in the bot.
         </p>
       </div>
     );
