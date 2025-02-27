@@ -18,8 +18,11 @@ const CreatorCodeRedemption = () => {
   const { toast } = useToast();
   const telegramWebApp = window.Telegram?.WebApp;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    // Prevent default form submission if called from a form event
+    if (e) {
+      e.preventDefault();
+    }
     
     if (!creatorCode.trim()) {
       hapticFeedback('medium');
@@ -106,7 +109,7 @@ const CreatorCodeRedemption = () => {
       // Create a wrapper function that doesn't take arguments
       const handleMainButtonClick = () => {
         if (creatorCode.trim()) {
-          handleSubmit(new Event('submit'));
+          handleSubmit(); // Call without an event parameter
         } else {
           hapticFeedback('medium');
           showError('Please enter a creator code');
