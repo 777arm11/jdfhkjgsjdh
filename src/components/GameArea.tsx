@@ -5,6 +5,7 @@ import TargetList from '@/components/game/TargetList';
 import { useTargetManagement } from '@/hooks/useTargetManagement';
 import { useGameCountdown } from '@/hooks/useGameCountdown';
 import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
+import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 
 interface GameAreaProps {
   isPlaying: boolean;
@@ -21,6 +22,7 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying }) => {
 
   const { hapticFeedback } = useTelegramWebApp();
   const countdown = useGameCountdown(isPlaying, spawnMainTarget);
+  const { activePlayers } = usePlayerPresence();
 
   useEffect(() => {
     if (!isPlaying) {
@@ -45,6 +47,13 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying }) => {
           <div key={i} className="border border-purple-500/40" />
         ))}
       </div>
+
+      {/* Multiplayer indicator */}
+      {activePlayers > 1 && (
+        <div className="absolute top-16 left-4 bg-game-accent/80 text-white px-3 py-1 rounded-full font-pixel text-sm z-10">
+          Multiplayer Active
+        </div>
+      )}
 
       {/* Combo multiplier */}
       {combo > 1 && (
