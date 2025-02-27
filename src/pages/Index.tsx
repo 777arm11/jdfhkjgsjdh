@@ -5,7 +5,6 @@ import GameLayout from '@/components/GameLayout';
 import { useTelegramValidation } from '@/hooks/useTelegramValidation';
 import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 import { Loader2 } from 'lucide-react';
-import { usePlayerPresence } from '@/hooks/usePlayerPresence';
 
 const Index = () => {
   const {
@@ -17,9 +16,6 @@ const Index = () => {
 
   const { isValid, isLoading } = useTelegramValidation();
   const { hapticFeedback, showError, colorScheme, isWebAppAvailable } = useTelegramWebApp();
-  
-  // Initialize player presence
-  const { activePlayers } = usePlayerPresence();
 
   // Add debug logging
   useEffect(() => {
@@ -27,7 +23,6 @@ const Index = () => {
     console.log('Debug: Environment:', process.env.NODE_ENV);
     console.log('Debug: isValid:', isValid, 'isLoading:', isLoading);
     console.log('Debug: Telegram WebApp available:', isWebAppAvailable);
-    console.log('Debug: Active players:', activePlayers);
     
     // Log window.Telegram object
     if (window.Telegram) {
@@ -40,7 +35,7 @@ const Index = () => {
     } else {
       console.log('Debug: window.Telegram does not exist');
     }
-  }, [isValid, isLoading, isWebAppAvailable, activePlayers]);
+  }, [isValid, isLoading, isWebAppAvailable]);
 
   // Move the error notification to useEffect
   useEffect(() => {

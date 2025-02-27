@@ -78,7 +78,7 @@ serve(async (req) => {
       console.log('Processing /start command');
 
       // Get the game URL from environment variable
-      const gameUrl = Deno.env.get('GAME_URL') || 'https://hope-coin-game.lovable.app/';
+      const gameUrl = Deno.env.get('GAME_URL') || 'https://your-game-url.com';
       
       // Create inline keyboard with game launch button
       const inlineKeyboard = {
