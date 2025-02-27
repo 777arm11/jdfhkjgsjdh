@@ -1,5 +1,5 @@
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { getBrowserId } from '@/utils/browserUtils';
@@ -7,7 +7,6 @@ import { getBrowserId } from '@/utils/browserUtils';
 export const usePlayerData = () => {
   const { toast } = useToast();
   const browserId = getBrowserId();
-  const queryClient = useQueryClient();
   
   const getTelegramData = () => {
     const urlSearchParams = new URLSearchParams(window.location.search);
@@ -105,15 +104,9 @@ export const usePlayerData = () => {
     }
   });
 
-  // Add refreshPlayerData function
-  const refreshPlayerData = () => {
-    queryClient.invalidateQueries({ queryKey: ['player', browserId, telegramId] });
-  };
-
   return {
     playerData,
     playerError,
-    telegramId,
-    refreshPlayerData
+    telegramId // Now exposing telegramId in the return value
   };
 };
