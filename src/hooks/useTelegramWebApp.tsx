@@ -14,33 +14,40 @@ export const useTelegramWebApp = () => {
         webApp.ready();
         webApp.expand();
         
-        // Setup event listeners
-        const handleViewportChanged = () => {
-          console.log('Debug: Telegram WebApp viewport changed');
-        };
-        
-        const handleMainButtonClicked = () => {
-          console.log('Debug: Telegram WebApp main button clicked');
-        };
-        
-        const handleBackButtonClicked = () => {
-          console.log('Debug: Telegram WebApp back button clicked');
-        };
-        
-        // Add event listeners
-        webApp.onEvent('viewportChanged', handleViewportChanged);
-        webApp.onEvent('mainButtonClicked', handleMainButtonClicked);
-        webApp.onEvent('backButtonClicked', handleBackButtonClicked);
+        // Setup event listeners using addEventListener if supported
+        // Not all Telegram clients support this, so we'll use a try/catch
+        try {
+          const handleViewportChanged = () => {
+            console.log('Debug: Telegram WebApp viewport changed');
+          };
+          
+          const handleMainButtonClicked = () => {
+            console.log('Debug: Telegram WebApp main button clicked');
+          };
+          
+          const handleBackButtonClicked = () => {
+            console.log('Debug: Telegram WebApp back button clicked');
+          };
+          
+          // Add event listeners if they exist
+          if (typeof webApp.addEventListener === 'function') {
+            webApp.addEventListener('viewportChanged', handleViewportChanged);
+            webApp.addEventListener('mainButtonClicked', handleMainButtonClicked);
+            webApp.addEventListener('backButtonClicked', handleBackButtonClicked);
+            
+            // Return cleanup function
+            return () => {
+              webApp.removeEventListener('viewportChanged', handleViewportChanged);
+              webApp.removeEventListener('mainButtonClicked', handleMainButtonClicked);
+              webApp.removeEventListener('backButtonClicked', handleBackButtonClicked);
+            };
+          }
+        } catch (e) {
+          console.log('Debug: Event listeners not supported in this Telegram client');
+        }
         
         setIsReady(true);
         console.log('Debug: Telegram WebApp ready and expanded');
-        
-        // Return cleanup function
-        return () => {
-          webApp.offEvent('viewportChanged', handleViewportChanged);
-          webApp.offEvent('mainButtonClicked', handleMainButtonClicked);
-          webApp.offEvent('backButtonClicked', handleBackButtonClicked);
-        };
       } catch (error) {
         console.error('Debug: Error initializing Telegram WebApp', error);
       }
@@ -88,24 +95,31 @@ export const useTelegramWebApp = () => {
     }
   }, [webApp]);
 
+  // Simplified back button implementation since it's not supported in all clients
   const showBackButton = useCallback((onClick: () => void) => {
-    if (!webApp) {
+    if (!webApp || !webApp.BackButton) {
       console.log('Debug: Back button not available');
       return () => {};
     }
     
     try {
-      webApp.BackButton.onClick(onClick);
-      webApp.BackButton.show();
-      
-      return () => {
-        webApp.BackButton.offClick(onClick);
-        webApp.BackButton.hide();
-      };
+      // Make sure BackButton exists
+      if (typeof webApp.BackButton?.onClick === 'function') {
+        webApp.BackButton.onClick(onClick);
+        webApp.BackButton.show();
+        
+        return () => {
+          if (typeof webApp.BackButton?.offClick === 'function') {
+            webApp.BackButton.offClick(onClick);
+            webApp.BackButton.hide();
+          }
+        };
+      }
     } catch (error) {
       console.error('Debug: Back button error', error);
-      return () => {};
     }
+    
+    return () => {};
   }, [webApp]);
 
   const showPopup = useCallback((title: string, message: string, buttons: string[] = ['OK']) => {
@@ -119,7 +133,17 @@ export const useTelegramWebApp = () => {
     }
     
     try {
-      return webApp.showPopup({ title, message, buttons });
+      // Check if showPopup method exists
+      if (typeof webApp.showPopup === 'function') {
+        return webApp.showPopup({ title, message, buttons });
+      } else {
+        console.log('Debug: Native popup not available, using toast instead');
+        toast({
+          title,
+          description: message,
+        });
+        return Promise.resolve({ button_id: 0 });
+      }
     } catch (error) {
       console.error('Debug: Popup error', error);
       toast({

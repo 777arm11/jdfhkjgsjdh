@@ -38,19 +38,33 @@ const CreatorCodeRedemption = () => {
     hapticFeedback('medium');
 
     try {
-      const { data, error } = await supabase.rpc('redeem_creator_code', {
-        code: creatorCode.trim(),
-        p_player_id: playerData?.id
+      // Check if we can identify the user
+      const user_telegram_id = playerData?.browser_id || '';
+      
+      if (!user_telegram_id) {
+        throw new Error('Could not identify player. Please refresh the page and try again.');
+      }
+
+      // Call the redeem_creator_code RPC with the correct parameter names
+      const { data: coinsAdded, error } = await supabase.rpc('redeem_creator_code', {
+        user_telegram_id: user_telegram_id,
+        creator_code: creatorCode.trim()
       });
 
       if (error) {
         throw new Error(error.message || 'Failed to redeem code');
       }
 
-      if (data.success) {
+      // Check for error codes returned from the function
+      if (coinsAdded === 0) {
+        throw new Error('Invalid creator code');
+      } else if (coinsAdded === -1) {
+        throw new Error('Creator code pool is depleted');
+      } else if (coinsAdded > 0) {
+        // Success case
         setIsSuccess(true);
         hapticFeedback('heavy');
-        showSuccess(`Successfully redeemed code: ${data.coins_added} coins added!`);
+        showSuccess(`Successfully redeemed code: ${coinsAdded} coins added!`);
         refreshPlayerData();
         
         // Show success animation with Telegram WebApp
@@ -64,7 +78,7 @@ const CreatorCodeRedemption = () => {
           setCreatorCode('');
         }, 3000);
       } else {
-        throw new Error(data.message || 'Invalid code');
+        throw new Error('Unknown error occurred');
       }
     } catch (error) {
       console.error('Error redeeming code:', error);
@@ -88,14 +102,18 @@ const CreatorCodeRedemption = () => {
       // Configure main button
       const mainButton = webApp.MainButton;
       mainButton.setText('Redeem Code');
-      mainButton.onClick(() => {
+      
+      // Create a wrapper function that doesn't take arguments
+      const handleMainButtonClick = () => {
         if (creatorCode.trim()) {
-          handleSubmit(new Event('submit') as any);
+          handleSubmit(new Event('submit'));
         } else {
           hapticFeedback('medium');
           showError('Please enter a creator code');
         }
-      });
+      };
+      
+      mainButton.onClick(handleMainButtonClick);
       
       // Show/hide button based on code presence
       if (creatorCode.trim()) {
@@ -105,7 +123,7 @@ const CreatorCodeRedemption = () => {
       }
       
       return () => {
-        mainButton.offClick(handleSubmit);
+        mainButton.offClick(handleMainButtonClick);
         mainButton.hide();
       };
     }
