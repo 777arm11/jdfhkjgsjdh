@@ -5,6 +5,7 @@ import GameLayout from '@/components/GameLayout';
 import { useTelegramValidation } from '@/hooks/useTelegramValidation';
 import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 import { Loader2 } from 'lucide-react';
+import { usePlayerData } from '@/hooks/usePlayerData';
 
 const Index = () => {
   const {
@@ -15,7 +16,15 @@ const Index = () => {
   } = useGameLogic();
 
   const { isValid, isLoading } = useTelegramValidation();
-  const { hapticFeedback, showError, colorScheme, isWebAppAvailable } = useTelegramWebApp();
+  const { 
+    hapticFeedback, 
+    showError, 
+    colorScheme, 
+    isWebAppAvailable,
+    getUserInfo
+  } = useTelegramWebApp();
+  
+  const { playerData } = usePlayerData();
 
   // Add debug logging
   useEffect(() => {
@@ -23,6 +32,14 @@ const Index = () => {
     console.log('Debug: Environment:', process.env.NODE_ENV);
     console.log('Debug: isValid:', isValid, 'isLoading:', isLoading);
     console.log('Debug: Telegram WebApp available:', isWebAppAvailable);
+    
+    // Log Telegram user info
+    const userInfo = getUserInfo();
+    if (userInfo) {
+      console.log('Debug: Telegram user info:', userInfo);
+    } else {
+      console.log('Debug: No Telegram user info available');
+    }
     
     // Log window.Telegram object
     if (window.Telegram) {
@@ -35,7 +52,7 @@ const Index = () => {
     } else {
       console.log('Debug: window.Telegram does not exist');
     }
-  }, [isValid, isLoading, isWebAppAvailable]);
+  }, [isValid, isLoading, isWebAppAvailable, getUserInfo]);
 
   // Move the error notification to useEffect
   useEffect(() => {

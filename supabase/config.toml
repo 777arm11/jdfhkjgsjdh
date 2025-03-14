@@ -19,4 +19,3 @@ verify_jwt = false
 
 [functions.handle-telegram-webhook]
 verify_jwt = false
-

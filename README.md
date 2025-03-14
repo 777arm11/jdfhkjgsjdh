@@ -1,5 +1,5 @@
 
-# Welcome to your Lovable project
+# Taparoo - Telegram Mini App Game
 
 ## Project info
 
@@ -14,23 +14,51 @@ To deploy this game on Telegram, follow these steps:
    - Use the `/newbot` command to create a new bot
    - Save the API token you receive
 
-2. **Enable Games for Your Bot**:
+2. **Set up required environment variables**:
+   - In the Supabase dashboard for this project, go to the Edge Functions settings
+   - Add the following secrets:
+     - `TELEGRAM_BOT_TOKEN`: Your Telegram bot token from BotFather
+     - `GAME_URL`: The URL where your game is hosted (use the Lovable published URL)
+
+3. **Configure Webhook URL for Telegram**:
+   - After the edge function is deployed, register it with Telegram using this command:
+   ```
+   curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=<YOUR_WEBHOOK_URL>"
+   ```
+   - Replace `<YOUR_BOT_TOKEN>` with your actual bot token
+   - Replace `<YOUR_WEBHOOK_URL>` with your Supabase edge function URL for the webhook handler
+
+4. **Enable Games for Your Bot**:
    - Send `/mybots` to @BotFather
    - Select your bot
    - Choose "Games" from the menu
    - Use `/newgame` to create a new game
    - Set the game title and description
-   - Provide the URL where your game is hosted (use the Lovable URL or your custom domain)
+   - Provide the URL where your game is hosted (from your GAME_URL environment variable)
 
-3. **Deploy Your Game**:
+5. **Publish Your Game**:
    - Click on Share -> Publish in [Lovable](https://lovable.dev/projects/598ff028-9e07-4d49-b11d-51fa89f6d295)
    - Copy the published URL
-   - Send it to @BotFather when setting up your game
+   - Update the GAME_URL environment variable if needed
 
-4. **Test Your Game**:
+6. **Test Your Bot**:
    - Start a chat with your bot
-   - Type "@YourBot" followed by the name of your game
-   - Select the game to play it
+   - Try the following commands:
+     - `/start` - Should show a button to launch the game
+     - `/balance` - Should show your coin balance
+     - `/referral` - Should provide your referral link
+     - `/help` - Should list available commands
+
+## Available commands in your bot
+
+The bot supports the following commands:
+
+- `/start` - Starts the bot and shows the game launch button
+- `/balance` - Shows the user's current coin balance
+- `/referral` - Generates and shows the user's referral link
+- `/help` - Displays a list of available commands
+
+When a user joins through a referral link (format: `/start ref_XXXXXX`), both the referrer and the new user receive bonus coins.
 
 ## How can I edit this code?
 
@@ -64,20 +92,6 @@ npm i
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
 ## What technologies are used for this project?
 
 This project is built with:
@@ -88,13 +102,21 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 - Telegram Bot API integration
+- Supabase for the backend
 
-## How can I deploy this project?
+## Database Schema
 
-Simply open [Lovable](https://lovable.dev/projects/598ff028-9e07-4d49-b11d-51fa89f6d295) and click on Share -> Publish.
+The game uses the following tables:
 
-After publishing, follow the "Deploying to Telegram" section above to integrate with Telegram.
+- **players** - Stores player information and coin balances
+- **daily_login_rewards** - Tracks daily login rewards
+- **referrals** - Tracks referral relationships
+- **creator_codes** - Stores creator codes for bonus coins
 
-## I want to use a custom domain - is that possible?
+## Project Features
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- **Tapping Game**: A simple but addictive tapping game
+- **Coin System**: Earn coins by playing the game
+- **Leaderboard**: Compete with other players
+- **Referral System**: Invite friends and earn rewards
+- **Daily Rewards**: Get rewards for daily logins

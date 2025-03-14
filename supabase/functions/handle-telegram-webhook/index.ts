@@ -1,3 +1,4 @@
+
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
@@ -25,6 +26,7 @@ interface TelegramUpdate {
 async function sendTelegramMessage(chatId: number, text: string, inlineKeyboard?: any) {
   const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
   if (!botToken) {
+    console.error('Bot token not configured');
     throw new Error('Bot token not configured');
   }
 
@@ -76,6 +78,57 @@ serve(async (req) => {
     // Handle /start command
     if (text?.startsWith('/start')) {
       console.log('Processing /start command');
+      
+      // Check for referral code
+      const parts = text.split(' ');
+      let referralMessage = '';
+      
+      if (parts.length > 1 && parts[1].startsWith('ref_')) {
+        const referralCode = parts[1].substring(4); // Remove 'ref_' prefix
+        console.log(`Referral code detected: ${referralCode}`);
+        
+        // Process referral if needed
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        
+        if (supabaseUrl && supabaseServiceKey) {
+          const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+          
+          try {
+            // Create Telegram user record if it doesn't exist
+            await supabaseAdmin.rpc('create_telegram_user', {
+              p_telegram_id: from.id,
+              p_username: from.username || '',
+              p_first_name: from.first_name || '',
+              p_last_name: from.last_name || ''
+            });
+            
+            // Get player ID for the current user
+            const { data: playerData } = await supabaseAdmin
+              .from('players')
+              .select('id')
+              .eq('telegram_id', from.id.toString())
+              .maybeSingle();
+              
+            if (playerData?.id) {
+              // Process the referral
+              const { data: referralResult } = await supabaseAdmin.rpc(
+                'process_referral_reward',
+                {
+                  referral_code_param: referralCode,
+                  player_id_param: playerData.id
+                }
+              );
+              
+              if (referralResult > 0) {
+                referralMessage = `\n\n🎁 You've earned ${referralResult} coins from using a referral code!`;
+              }
+            }
+          } catch (err) {
+            console.error('Error processing referral:', err);
+          }
+        }
+      }
 
       // Get the game URL from environment variable
       const gameUrl = Deno.env.get('GAME_URL') || 'https://hope-coin-game.lovable.app/';
@@ -92,7 +145,7 @@ serve(async (req) => {
 
       const welcomeMessage = `Welcome to Taparoo! 🎮\n\n` +
         `Get ready to tap your way to the top and compete with players worldwide! ` +
-        `Click the button below to start playing! 🎯`;
+        `Click the button below to start playing! 🎯${referralMessage}`;
 
       await sendTelegramMessage(chat.id, welcomeMessage, inlineKeyboard);
     } 
@@ -121,9 +174,10 @@ serve(async (req) => {
         .from('players')
         .select('coins')
         .eq('telegram_id', from.id.toString())
-        .single();
+        .maybeSingle();
 
       if (playerError) {
+        console.error('Error fetching player balance:', playerError);
         throw new Error('Failed to fetch player balance');
       }
 
@@ -140,22 +194,62 @@ serve(async (req) => {
       }
 
       const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+      
+      // Get the player data
       const { data: player, error: playerError } = await supabaseAdmin
         .from('players')
         .select('referral_code')
         .eq('telegram_id', from.id.toString())
-        .single();
+        .maybeSingle();
+        
+      // If no referral code exists, generate one
+      if (!player?.referral_code) {
+        // Generate a new referral code
+        const { data: referralCode } = await supabaseAdmin.rpc('generate_referral_code');
+        
+        // Update the player record with the new code
+        await supabaseAdmin
+          .from('players')
+          .update({ referral_code: referralCode })
+          .eq('telegram_id', from.id.toString());
+          
+        // Get the updated player data
+        const { data: updatedPlayer } = await supabaseAdmin
+          .from('players')
+          .select('referral_code')
+          .eq('telegram_id', from.id.toString())
+          .maybeSingle();
+          
+        if (updatedPlayer?.referral_code) {
+          // Get bot username for correct referral link
+          const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
+          const botInfoResponse = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
+          const botInfo = await botInfoResponse.json();
+          const botUsername = botInfo.result?.username || 'Hope_Coin_tapbot';
+          
+          const referralMessage = `🎁 Share your referral link and earn rewards!\n\n` +
+            `Your referral link:\n` +
+            `https://t.me/${botUsername}?start=ref_${updatedPlayer.referral_code}\n\n` +
+            `Both you and your friend will receive 50 bonus coins when they join!`;
+  
+          await sendTelegramMessage(chat.id, referralMessage);
+        } else {
+          throw new Error('Failed to generate referral code');
+        }
+      } else {
+        // Get bot username for correct referral link
+        const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
+        const botInfoResponse = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
+        const botInfo = await botInfoResponse.json();
+        const botUsername = botInfo.result?.username || 'Hope_Coin_tapbot';
+        
+        const referralMessage = `🎁 Share your referral link and earn rewards!\n\n` +
+          `Your referral link:\n` +
+          `https://t.me/${botUsername}?start=ref_${player.referral_code}\n\n` +
+          `Both you and your friend will receive 50 bonus coins when they join!`;
 
-      if (playerError || !player?.referral_code) {
-        throw new Error('Failed to fetch referral code');
+        await sendTelegramMessage(chat.id, referralMessage);
       }
-
-      const referralMessage = `🎁 Share your referral link and earn rewards!\n\n` +
-        `Your referral link:\n` +
-        `https://t.me/YourBotUsername?start=ref_${player.referral_code}\n\n` +
-        `Both you and your friend will receive bonus coins when they join!`;
-
-      await sendTelegramMessage(chat.id, referralMessage);
     }
     // Handle other messages
     else {
