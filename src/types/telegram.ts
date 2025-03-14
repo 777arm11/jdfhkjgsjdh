@@ -24,6 +24,7 @@ export interface TelegramWebApp {
     impactOccurred: (style: 'light' | 'medium' | 'heavy') => void;
     notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
   };
+  showAlert?: (message: string) => void;
   showPopup?: (params: {
     title: string;
     message: string;
