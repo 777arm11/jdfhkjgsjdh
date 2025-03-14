@@ -51,7 +51,7 @@ export const useTelegramWebApp = () => {
 
   // Back button control methods
   const showBackButton = useCallback(() => {
-    if (webApp && 'BackButton' in webApp) {
+    if (webApp && webApp.BackButton) {
       webApp.BackButton.show();
       setBackButtonVisible(true);
       console.log('Debug: Back button shown');
@@ -61,7 +61,7 @@ export const useTelegramWebApp = () => {
   }, [webApp]);
 
   const hideBackButton = useCallback(() => {
-    if (webApp && 'BackButton' in webApp) {
+    if (webApp && webApp.BackButton) {
       webApp.BackButton.hide();
       setBackButtonVisible(false);
       console.log('Debug: Back button hidden');
@@ -71,7 +71,7 @@ export const useTelegramWebApp = () => {
   }, [webApp]);
 
   const onBackButtonClick = useCallback((callback: () => void) => {
-    if (webApp && 'BackButton' in webApp) {
+    if (webApp && webApp.BackButton) {
       webApp.BackButton.onClick(callback);
       console.log('Debug: Back button click handler set');
     } else {
@@ -80,7 +80,7 @@ export const useTelegramWebApp = () => {
   }, [webApp]);
 
   const offBackButtonClick = useCallback((callback: () => void) => {
-    if (webApp && 'BackButton' in webApp) {
+    if (webApp && webApp.BackButton) {
       webApp.BackButton.offClick(callback);
       console.log('Debug: Back button click handler removed');
     } else {
@@ -94,7 +94,7 @@ export const useTelegramWebApp = () => {
     type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive',
     text: string
   }> = [{ text: 'OK', type: 'default' }]) => {
-    if (webApp && 'showPopup' in webApp) {
+    if (webApp && typeof webApp.showPopup === 'function') {
       return new Promise<string>((resolve) => {
         webApp.showPopup({
           title,
