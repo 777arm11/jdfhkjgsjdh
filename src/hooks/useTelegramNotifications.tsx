@@ -13,15 +13,21 @@ export const useTelegramNotifications = () => {
   );
 
   const showSuccess = useCallback(
-    () => {
+    (message?: string) => {
       webApp?.HapticFeedback?.notificationOccurred('success');
+      if (message && webApp?.showAlert) {
+        webApp.showAlert(message);
+      }
     },
     [webApp]
   );
 
   const showError = useCallback(
-    () => {
+    (message?: string) => {
       webApp?.HapticFeedback?.notificationOccurred('error');
+      if (message && webApp?.showAlert) {
+        webApp.showAlert(message);
+      }
     },
     [webApp]
   );
