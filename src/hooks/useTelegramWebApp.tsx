@@ -2,6 +2,68 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
+// Define the Telegram WebApp interface to properly type the global object
+interface TelegramWebApp {
+  ready: () => void;
+  expand: () => void;
+  close: () => void;
+  MainButton: {
+    text: string;
+    setText: (text: string) => void;
+    show: () => void;
+    hide: () => void;
+    enable: () => void;
+    disable: () => void;
+    onClick: (cb: () => void) => void;
+    offClick: (cb: () => void) => void;
+  };
+  BackButton?: {
+    show: () => void;
+    hide: () => void;
+    onClick: (cb: () => void) => void;
+    offClick: (cb: () => void) => void;
+  };
+  HapticFeedback?: {
+    impactOccurred: (style: 'light' | 'medium' | 'heavy') => void;
+    notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
+  };
+  showPopup?: (params: {
+    title: string;
+    message: string;
+    buttons: Array<{
+      id: string;
+      type: 'default' | 'ok' | 'close' | 'cancel' | 'destructive';
+      text: string;
+    }>;
+  }, callback: (buttonId: string) => void) => void;
+  themeParams?: {
+    bg_color: string;
+    text_color: string;
+    hint_color: string;
+    button_color: string;
+    button_text_color: string;
+  };
+  colorScheme?: 'light' | 'dark';
+  initData?: string;
+  initDataUnsafe?: {
+    user?: {
+      id: number;
+      first_name?: string;
+      last_name?: string;
+      username?: string;
+    };
+  };
+}
+
+// Update the global Window interface to include the correctly typed Telegram property
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: TelegramWebApp;
+    };
+  }
+}
+
 export const useTelegramWebApp = () => {
   const { toast } = useToast();
   const webApp = window.Telegram?.WebApp;
@@ -51,7 +113,7 @@ export const useTelegramWebApp = () => {
 
   // Back button control methods
   const showBackButton = useCallback(() => {
-    if (webApp && webApp.BackButton) {
+    if (webApp?.BackButton) {
       webApp.BackButton.show();
       setBackButtonVisible(true);
       console.log('Debug: Back button shown');
@@ -61,7 +123,7 @@ export const useTelegramWebApp = () => {
   }, [webApp]);
 
   const hideBackButton = useCallback(() => {
-    if (webApp && webApp.BackButton) {
+    if (webApp?.BackButton) {
       webApp.BackButton.hide();
       setBackButtonVisible(false);
       console.log('Debug: Back button hidden');
@@ -71,7 +133,7 @@ export const useTelegramWebApp = () => {
   }, [webApp]);
 
   const onBackButtonClick = useCallback((callback: () => void) => {
-    if (webApp && webApp.BackButton) {
+    if (webApp?.BackButton) {
       webApp.BackButton.onClick(callback);
       console.log('Debug: Back button click handler set');
     } else {
@@ -80,7 +142,7 @@ export const useTelegramWebApp = () => {
   }, [webApp]);
 
   const offBackButtonClick = useCallback((callback: () => void) => {
-    if (webApp && webApp.BackButton) {
+    if (webApp?.BackButton) {
       webApp.BackButton.offClick(callback);
       console.log('Debug: Back button click handler removed');
     } else {
@@ -94,7 +156,7 @@ export const useTelegramWebApp = () => {
     type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive',
     text: string
   }> = [{ text: 'OK', type: 'default' }]) => {
-    if (webApp && typeof webApp.showPopup === 'function') {
+    if (webApp?.showPopup) {
       return new Promise<string>((resolve) => {
         webApp.showPopup({
           title,
