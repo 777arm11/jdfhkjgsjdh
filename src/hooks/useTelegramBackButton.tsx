@@ -1,5 +1,5 @@
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTelegramWebAppInstance } from '@/hooks/useTelegramWebAppInstance';
 
 export const useTelegramBackButton = () => {
@@ -10,9 +10,6 @@ export const useTelegramBackButton = () => {
     if (webApp?.BackButton) {
       webApp.BackButton.show();
       setBackButtonVisible(true);
-      console.log('Debug: Back button shown');
-    } else {
-      console.log('Debug: Back button not available');
     }
   }, [webApp]);
 
@@ -20,35 +17,36 @@ export const useTelegramBackButton = () => {
     if (webApp?.BackButton) {
       webApp.BackButton.hide();
       setBackButtonVisible(false);
-      console.log('Debug: Back button hidden');
-    } else {
-      console.log('Debug: Back button not available');
     }
   }, [webApp]);
 
-  const onBackButtonClick = useCallback((callback: () => void) => {
-    if (webApp?.BackButton) {
-      webApp.BackButton.onClick(callback);
-      console.log('Debug: Back button click handler set');
-    } else {
-      console.log('Debug: Back button not available for click handler');
-    }
-  }, [webApp]);
+  const onBackButtonClick = useCallback(
+    (cb: () => void) => {
+      webApp?.BackButton?.onClick(cb);
+    },
+    [webApp]
+  );
 
-  const offBackButtonClick = useCallback((callback: () => void) => {
-    if (webApp?.BackButton) {
-      webApp.BackButton.offClick(callback);
-      console.log('Debug: Back button click handler removed');
-    } else {
-      console.log('Debug: Back button not available for removing click handler');
-    }
-  }, [webApp]);
+  const offBackButtonClick = useCallback(
+    (cb: () => void) => {
+      webApp?.BackButton?.offClick(cb);
+    },
+    [webApp]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (backButtonVisible && webApp?.BackButton) {
+        webApp.BackButton.hide();
+      }
+    };
+  }, [backButtonVisible, webApp]);
 
   return {
     backButtonVisible,
     showBackButton,
     hideBackButton,
     onBackButtonClick,
-    offBackButtonClick
+    offBackButtonClick,
   };
 };

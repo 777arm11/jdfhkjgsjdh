@@ -16,6 +16,8 @@ port = 54323
 
 [functions.validate-telegram]
 verify_jwt = false
+port = 54324
 
 [functions.handle-telegram-webhook]
 verify_jwt = false
+port = 54325
