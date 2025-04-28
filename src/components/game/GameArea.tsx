@@ -15,13 +15,9 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, onTargetHit }) => {
     targets,
     handleTargetClick,
     spawnMainTarget,
+    combo,
     clearAllTimeouts
   } = useTargetManagement();
-
-  const handleTargetHit = (targetId: string) => {
-    handleTargetClick(targetId);
-    onTargetHit();
-  };
 
   const countdown = useGameCountdown(isPlaying, spawnMainTarget);
 
@@ -29,13 +25,30 @@ const GameArea: React.FC<GameAreaProps> = ({ isPlaying, onTargetHit }) => {
     if (!isPlaying) {
       clearAllTimeouts();
     }
-    return () => clearAllTimeouts();
   }, [isPlaying, clearAllTimeouts]);
 
+  const handleTargetHit = (targetId: string) => {
+    handleTargetClick(targetId);
+    onTargetHit();
+  };
+
   return (
-    <div className="relative w-full h-[calc(100vh-16rem)] bg-purple-950/80 rounded-lg overflow-hidden">
-      <div className="absolute inset-0 border-2 border-purple-400/30 rounded-lg" />
+    <div className="relative w-full h-[calc(100vh-12rem)] sm:h-[calc(100vh-14rem)] bg-black/80 rounded-lg overflow-hidden transition-all duration-300 ease-in-out">
+      <div className="absolute inset-0 border-4 border-purple-400/50 rounded-lg pointer-events-none" />
+      <div className="absolute inset-0 border border-purple-300/40 rounded-lg pointer-events-none" />
       
+      <div className="absolute inset-0 grid grid-cols-8 grid-rows-6 opacity-20 pointer-events-none">
+        {Array.from({ length: 48 }).map((_, i) => (
+          <div key={i} className="border border-purple-500/40" />
+        ))}
+      </div>
+
+      {combo > 1 && (
+        <div className="absolute top-4 right-4 bg-purple-500 text-white px-4 py-2 rounded-full font-pixel animate-bounce">
+          {combo}x Combo!
+        </div>
+      )}
+
       <CountdownTimer countdown={countdown} />
       <TargetList 
         targets={targets} 
