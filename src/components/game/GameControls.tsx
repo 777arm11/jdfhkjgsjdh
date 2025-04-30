@@ -14,7 +14,7 @@ const GameControls: React.FC<GameControlsProps> = React.memo(({ onStart, onReset
       {!isPlaying ? (
         <Button 
           onClick={onStart} 
-          className="w-64 h-20 text-xl font-pixel bg-game-primary hover:bg-game-secondary text-game-text border-4 border-game-text transition-all duration-300 transform hover:scale-105 active:scale-95 animate-pulse shadow-lg"
+          className="w-64 h-20 text-xl font-pixel bg-purple-700 hover:bg-purple-600 text-white border-4 border-purple-300 transition-all duration-300 transform hover:scale-105 active:scale-95 animate-pulse shadow-lg"
         >
           Start Game
         </Button>
@@ -22,7 +22,7 @@ const GameControls: React.FC<GameControlsProps> = React.memo(({ onStart, onReset
         <Button 
           onClick={onReset} 
           variant="outline"
-          className="w-64 h-20 text-xl font-pixel bg-game-secondary hover:bg-game-primary text-game-text border-4 border-game-text transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg"
+          className="w-64 h-20 text-xl font-pixel bg-purple-600 hover:bg-purple-700 text-white border-4 border-purple-300 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg"
         >
           Reset
         </Button>

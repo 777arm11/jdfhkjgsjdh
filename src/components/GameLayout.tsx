@@ -1,12 +1,26 @@
 
-import React from 'react';
-import { useGameState } from '@/hooks/useGameState';
+import React, { useState } from 'react';
 import GameArea from '@/components/game/GameArea';
 import ScoreDisplay from '@/components/game/ScoreDisplay';
 import GameControls from '@/components/game/GameControls';
 
 const GameLayout: React.FC = () => {
-  const { score, isPlaying, startGame, resetGame, incrementScore } = useGameState();
+  const [score, setScore] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const startGame = () => {
+    setIsPlaying(true);
+    setScore(0);
+  };
+
+  const resetGame = () => {
+    setIsPlaying(false);
+    setScore(0);
+  };
+
+  const incrementScore = () => {
+    setScore(prevScore => prevScore + 1);
+  };
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-purple-900">
