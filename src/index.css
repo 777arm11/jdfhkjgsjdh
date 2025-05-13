@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -62,4 +63,8 @@
     transform: scale(0);
     opacity: 0;
   }
+}
+
+.taskbar-item {
+  @apply flex flex-col items-center justify-center transition-colors;
 }

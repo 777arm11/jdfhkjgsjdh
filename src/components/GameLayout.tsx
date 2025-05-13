@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import GameArea from '@/components/game/GameArea';
 import ScoreDisplay from '@/components/game/ScoreDisplay';
 import GameControls from '@/components/game/GameControls';
+import TaskBar from '@/components/game/TaskBar';
 
 const GameLayout: React.FC = () => {
   const [score, setScore] = useState(0);
@@ -24,7 +25,7 @@ const GameLayout: React.FC = () => {
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-purple-900">
-      <div className="w-full h-full px-2 py-4 sm:px-4 sm:py-6 flex flex-col gap-4 sm:gap-8">
+      <div className="w-full h-full px-2 py-4 sm:px-4 sm:py-6 flex flex-col gap-4 sm:gap-8 pb-20">
         <ScoreDisplay score={score} />
         <div className="flex-1 relative">
           <GameArea 
@@ -40,6 +41,7 @@ const GameLayout: React.FC = () => {
           />
         </div>
       </div>
+      <TaskBar />
     </div>
   );
 };
